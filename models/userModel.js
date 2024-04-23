@@ -65,9 +65,9 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: "Nom entreprise",
   },
-  site: {
+  sexe: {
     type: String,
-    default: "www.exemple.com",
+    enum: ['femme', 'homme']
   },
   couleur: {
     type: String,

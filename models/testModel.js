@@ -24,6 +24,12 @@ const testSchema = new mongoose.Schema({
         min: [0, 'Le coût du test ne peut pas être négatif'],
         default: 220,
     },
+    prixSococim: {
+        type: Number,
+        required: [false, 'Le coût du test est obligatoire'],
+        min: [0, 'Le coût du test ne peut pas être négatif'],
+        default: 120,
+    },
     prixPaf: {
         type: Number,
         required: [false, 'Le coût du test est obligatoire'],

@@ -20,6 +20,10 @@ const resultatSchema = new mongoose.Schema({
         type: String,
         required: true,  // Valeur du résultat du test, obligatoire
     },
+    methode: {
+        type: String,
+        required: false,  // methode du résultat du test, obligatoire
+    },
     dernierResultatAnterieur: {
         valeur: String,  // Dernière valeur connue pour ce test pour ce patient
         date: Date       // Date du dernier résultat

@@ -33,7 +33,7 @@ exports.createResultat = asyncHandler(async (req, res) => {
         patientId,
         valeur,
         interpretation,
-
+        methode,
         statutInterpretation,
         typePrelevement,
         datePrelevement,
@@ -52,7 +52,7 @@ exports.createResultat = asyncHandler(async (req, res) => {
         valeur,
         dernierResultatAnterieur: dernierResultat ? { valeur: dernierResultat.valeur, date: dernierResultat.createdAt } : null,
         interpretation,
-
+        methode,
         statutInterpretation,
         typePrelevement,
         datePrelevement,
