@@ -9,7 +9,10 @@ const {
     getAnalyse,
     updateAnalyse,
     deleteAnalyse,
-    getTestIdsByAnalyse
+    getTestIdsByAnalyse,
+    getTopTests,
+    getAnalysesCountByMonth,
+    getTestUsageByMonth
 } = require('../controllers/analyseController');
 
 const { protect } = require('../middleware/authMiddleware');
@@ -19,6 +22,11 @@ const router = express.Router();
 
 
 router.get('/:analyseId/tests', getTestIdsByAnalyse);
+// Définir la route pour obtenir l'utilisation des tests par mois
+router.get('/testusageparmois', getTestUsageByMonth);
+router.get('/analyses-per-month', getAnalysesCountByMonth);
+router.get('/analyseparmois', getAnalysesCountByMonth);
+router.get('/toptests', getTopTests);
 router.get('/patient', protect, getAnalysesPatient);
 
 // Route pour créer une nouvelle analyse et obtenir toutes les analyses

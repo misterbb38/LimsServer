@@ -593,3 +593,159 @@ exports.getTestIdsByAnalyse = asyncHandler(async (req, res) => {
     }
 });
 
+
+exports.getTopTests = asyncHandler(async (req, res) => {
+    try {
+        // Aggrégation pour compter les occurrences de chaque test
+        const topTests = await Analyse.aggregate([
+            // Décomposer le tableau de tests pour chaque analyse
+            { $unwind: '$tests' },
+            // Grouper par test et compter les occurrences
+            {
+                $group: {
+                    _id: '$tests',
+                    count: { $sum: 1 }
+                }
+            },
+            // Trier par le nombre d'occurrences décroissant
+            { $sort: { count: -1 } },
+            // Limiter à 5 résultats
+            { $limit: 5 },
+            // Optionnel: joindre avec la collection de tests pour obtenir des détails supplémentaires
+            {
+                $lookup: {
+                    from: 'tests', // Assurez-vous que ce nom correspond à votre collection de tests
+                    localField: '_id',
+                    foreignField: '_id',
+                    as: 'testDetails'
+                }
+            },
+            // Déplier les détails du test (nécessaire si vous utilisez $lookup)
+            {
+                $unwind: {
+                    path: '$testDetails',
+                    preserveNullAndEmptyArrays: false
+                }
+            },
+            // Projeter le format désiré
+            {
+                $project: {
+                    _id: 0,
+                    testId: '$_id',
+                    name: '$testDetails.nom',
+                    count: 1
+                }
+            }
+        ]);
+
+        res.status(200).json({
+            success: true,
+            data: topTests
+        });
+    } catch (error) {
+        console.error('Failed to retrieve top tests:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error while retrieving top tests'
+        });
+    }
+});
+
+
+// Contrôleur pour obtenir le nombre d'analyses par mois
+exports.getAnalysesCountByMonth = asyncHandler(async (req, res) => {
+    const year = req.query.year || new Date().getFullYear(); // Prendre l'année courante si aucune année n'est spécifiée
+
+    const analysesPerMonth = await Analyse.aggregate([
+        {
+            $project: {
+                month: { $month: "$createdAt" },
+                year: { $year: "$createdAt" }
+            }
+        },
+        {
+            $match: {
+                year: parseInt(year) // Assurer que l'année est un entier
+            }
+        },
+        {
+            $group: {
+                _id: "$month",
+                count: { $sum: 1 }
+            }
+        },
+        {
+            $sort: { _id: 1 } // Trier par mois de façon ascendante
+        }
+    ]);
+
+    res.status(200).json({
+        success: true,
+        data: analysesPerMonth
+    });
+});
+
+// Contrôleur pour obtenir le nombre d'utilisations de chaque test par mois
+exports.getTestUsageByMonth = asyncHandler(async (req, res) => {
+    const year = req.query.year ? parseInt(req.query.year) : new Date().getFullYear(); // Utiliser l'année courante si non spécifiée
+
+    const testUsagePerMonth = await Analyse.aggregate([
+        {
+            // Filtre par année si spécifiée
+            $match: {
+                createdAt: {
+                    $gte: new Date(`${year}-01-01T00:00:00.000Z`),
+                    $lte: new Date(`${year}-12-31T23:59:59.999Z`)
+                }
+            }
+        },
+        {
+            // Décomposer le tableau 'tests' pour travailler avec chaque test individuellement
+            $unwind: '$tests'
+        },
+        {
+            // Grouper par mois et par test
+            $group: {
+                _id: {
+                    month: { $month: '$createdAt' },
+                    test: '$tests'
+                },
+                count: { $sum: 1 }
+            }
+        },
+        {
+            // Joindre les détails du test à partir de la collection de tests
+            $lookup: {
+                from: 'tests', // Assurez-vous que ce nom correspond à votre collection de tests
+                localField: '_id.test',
+                foreignField: '_id',
+                as: 'testDetails'
+            }
+        },
+        {
+            // Déplier les détails du test pour faciliter l'accès
+            $unwind: '$testDetails'
+        },
+        {
+            // Trier par mois et par test pour une lecture ordonnée
+            $sort: {
+                '_id.month': 1,
+                'count': -1
+            }
+        },
+        {
+            // Reformater les résultats pour inclure les noms des tests et le mois
+            $project: {
+                _id: 0,
+                month: '$_id.month',
+                testName: '$testDetails.nom',
+                testCount: '$count'
+            }
+        }
+    ]);
+
+    res.status(200).json({
+        success: true,
+        data: testUsagePerMonth
+    });
+});

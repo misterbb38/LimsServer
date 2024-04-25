@@ -4,10 +4,14 @@ const {
     getEtiquettePartenaires,
     getEtiquettePartenaireById,
     updateEtiquettePartenaire,
-    deleteEtiquettePartenaire
+    deleteEtiquettePartenaire,
+    getEtiquettesStats
 } = require('../controllers/etiquettePartenaireController');
 
 const router = express.Router();
+
+// Fichier : routes/etiquettePartenaireRoutes.js
+router.get('/stats', getEtiquettesStats);
 
 router.route('/')
     .post(createEtiquettePartenaire)

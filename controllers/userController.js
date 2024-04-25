@@ -338,3 +338,72 @@ exports.getNonPatientUsers = asyncHandler(async (req, res) => {
   res.status(200).json({ success: true, data: nonPatientUsers });
 });
 
+
+exports.getPatientStatistics = asyncHandler(async (req, res) => {
+  const { year } = req.params;
+
+  // Filtre de base pour les patients
+  let filter = { userType: 'patient' };
+
+  // Ajouter le filtre par année si spécifié
+  if (year) {
+    const startDate = new Date(`${year}-01-01`);
+    const endDate = new Date(`${year}-12-31`);
+    filter.$and = [
+      { createdAt: { $gte: startDate } },
+      { createdAt: { $lte: endDate } }
+    ];
+  }
+
+  // Calculer l'âge basé sur la date de naissance ou l'âge directement
+  const currentDate = new Date();
+  const patients = await User.aggregate([
+    { $match: filter },
+    {
+      $project: {
+        ageCalculated: {
+          $cond: {
+            if: "$age",
+            then: "$age",
+            else: {
+              $floor: {
+                $divide: [
+                  { $subtract: [currentDate, "$dateNaissance"] },
+                  (365 * 24 * 60 * 60 * 1000) // Nombre de millisecondes par an
+                ]
+              }
+            }
+          }
+        },
+        sexe: 1
+      }
+    },
+    {
+      $facet: {
+        total: [{ $count: "totalPatients" }],
+        males: [
+          { $match: { sexe: "homme" } },
+          { $count: "maleCount" }
+        ],
+        females: [
+          { $match: { sexe: "femme" } },
+          { $count: "femaleCount" }
+        ],
+        minors: [
+          { $match: { ageCalculated: { $lt: 15 } } },
+          { $count: "minorsCount" }
+        ]
+      }
+    }
+  ]);
+
+  // Vérifier si les données existent pour éviter les erreurs
+  const stats = patients[0] || { total: [], males: [], females: [], minors: [] };
+
+  res.status(200).json({
+    totalPatients: stats.total[0]?.totalPatients || 0,
+    maleCount: stats.males[0]?.maleCount || 0,
+    femaleCount: stats.females[0]?.femaleCount || 0,
+    minorsCount: stats.minors[0]?.minorsCount || 0,
+  });
+});

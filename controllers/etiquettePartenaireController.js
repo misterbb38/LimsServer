@@ -1,5 +1,6 @@
 const asyncHandler = require('express-async-handler');
 const EtiquettePartenaire = require('../models/etiquettePartenaireModel');
+const mongoose = require('mongoose');
 
 // Créer une nouvelle étiquette partenaire
 exports.createEtiquettePartenaire = asyncHandler(async (req, res) => {
@@ -70,3 +71,73 @@ exports.deleteEtiquettePartenaire = asyncHandler(async (req, res) => {
         data: {}
     });
 });
+
+
+// Fichier : controllers/etiquettePartenaireController.js
+
+// Fichier : controllers/etiquettePartenaireController.js
+
+
+
+exports.getEtiquettesStats = asyncHandler(async (req, res) => {
+    const { year, partenaireId } = req.query;
+
+    let matchQuery = {};
+    if (year) {
+        const startDate = new Date(`${year}-01-01`);
+        const endDate = new Date(`${year}-12-31`);
+        matchQuery.createdAt = { $gte: startDate, $lte: endDate };
+    }
+    if (partenaireId) {
+        // Utilisez le mot-clé `new` pour créer un ObjectId
+        matchQuery.partenaireId = new mongoose.Types.ObjectId(partenaireId);
+    }
+
+    const stats = await EtiquettePartenaire.aggregate([
+        { $match: matchQuery },
+        {
+            $group: {
+                _id: {
+                    month: { $month: "$createdAt" },
+                    partenaire: "$partenaireId"
+                },
+                totalSomme: { $sum: "$sommeAPayer" },
+                count: { $sum: 1 }
+            }
+        },
+        {
+            $lookup: {
+                from: "partenaires", // Assurez-vous que ce nom de collection est correct selon votre base de données MongoDB
+                localField: "_id.partenaire",
+                foreignField: "_id",
+                as: "partenaireDetails"
+            }
+        },
+        {
+            $unwind: {
+                path: "$partenaireDetails",
+                preserveNullAndEmptyArrays: false
+            }
+        },
+        {
+            $sort: { "_id.month": 1 }
+        },
+        {
+            $project: {
+                month: "$_id.month",
+                partenaire: "$partenaireDetails.nom",
+                totalSomme: 1,
+                count: 1,
+                telephone: "$partenaireDetails.telephone",
+                typePartenaire: "$partenaireDetails.typePartenaire"
+            }
+        }
+    ]);
+
+    res.status(200).json({
+        success: true,
+        data: stats
+    });
+});
+
+
