@@ -53,7 +53,7 @@ async function getNextId() {
 // });
 
 exports.createAnalyse = asyncHandler(async (req, res) => {
-    const { userId, tests, partenaireId, pourcentageCouverture, reduction, typeReduction, pc1, pc2, deplacement, dateDeRecuperation } = req.body;
+    const { userId, userOwn, tests, partenaireId, pourcentageCouverture, reduction, typeReduction, pc1, pc2, deplacement, dateDeRecuperation } = req.body;
 
     let ordonnancePdfPath = req.file ? req.file.path : null;
     let prixTotal = 0;
@@ -135,7 +135,7 @@ exports.createAnalyse = asyncHandler(async (req, res) => {
         analyseId: nouvelleAnalyse._id,
         status: "Création",
         description: "Création du processus",
-        updatedBy: userId // Supposant que l'utilisateur créant l'analyse est celui qui met à jour l'historique
+        updatedBy: userOwn // Supposant que l'utilisateur créant l'analyse est celui qui met à jour l'historique
     });
 
     // Assurez-vous d'ajouter l'historique créé à l'analyse
