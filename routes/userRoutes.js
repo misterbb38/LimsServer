@@ -23,12 +23,12 @@ router.post('/login', login);
 router.get('/patient-stats/:year?', protect, getPatientStatistics);
 router.put('/profile', protect, updateProfileUser);
 router.get('/profile', protect, getProfile);
-router.delete('/delete', protect, deleteUser);
 router.get('/simpleusers', protect, getSimpleUsers);
 router.get('/personnel', protect, getNonPatientUsers);
 router.route('/:id').
     get(protect, getUserById)
     .put(protect, updateProfile)
+    .delete(protect, deleteUser);
 
 
 module.exports = router

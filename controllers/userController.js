@@ -305,20 +305,20 @@ exports.getUserById = asyncHandler(async (req, res) => {
 
 
 
-
-
-// Supprimer un utilisateur
 exports.deleteUser = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.user._id);
+  // Recherche et suppression du test par son ID
+  const test = await User.findByIdAndDelete(req.params.id);
 
-  if (user) {
-    await user.remove();
-    res.json({ message: 'Utilisateur supprimé.' });
-  } else {
+  // Si aucun user trouvé, renvoyer une erreur 404
+  if (!test) {
     res.status(404);
-    throw new Error('Utilisateur non trouvé.');
+    throw new Error(`User non trouvé avec l'ID ${req.params.id}`);
   }
+
+  // Réponse confirmant la suppression
+  res.status(200).json({ success: true, data: {}, message: 'user supprimer' });
 });
+
 
 
 // exports.assignAccessKey = asyncHandler(async (req, res) => {
