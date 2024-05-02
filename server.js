@@ -51,6 +51,7 @@ app.use('/api/notification', notification);
 app.use('/api/test', testRoutes);
 app.use('/ordonnances', express.static('ordonnances'));
 app.use('/ordonnances', express.static(path.join(__dirname, 'ordonnances')));
+app.use('/uploads', express.static('uploads'));
 
 
 

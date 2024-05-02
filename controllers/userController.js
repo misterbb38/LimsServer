@@ -89,6 +89,7 @@ exports.login = asyncHandler(async (req, res) => {
       adresse: user.adresse,
       devise: user.devise,
       userType: user.userType, // Envoyer le type d'utilisateur pour utilisation côté front
+      logo: user.logo,
       token: generateToken(user._id), // Générer un nouveau token pour la session
     });
 
@@ -117,6 +118,7 @@ exports.getProfile = asyncHandler(async (req, res) => {
       telephone: user.telephone,
       adresse: user.adresse,
       userType: user.userType,
+      logo: user.logo
     });
   } else {
     res.status(404);

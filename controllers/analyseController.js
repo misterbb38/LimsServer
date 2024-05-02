@@ -154,7 +154,7 @@ exports.createAnalyse = asyncHandler(async (req, res) => {
 
 exports.getAnalyses = asyncHandler(async (req, res) => {
     const analyses = await Analyse.find()
-        .populate('userId', 'nom prenom email adresse telephone dateNaissance age nip createdAt updatedAt sexe') // Inclure createdAt et updatedAt
+        .populate('userId', 'nom prenom email adresse  telephone dateNaissance age nip createdAt updatedAt sexe') // Inclure createdAt et updatedAt
         .populate('tests', 'nom description machineA machineB valeurMachineA valeurMachineB interpretationA interpretationB prixAssurance prixPaf, prixIpm coeficiantB  montantRecus') // Inclure createdAt et updatedAt
         .populate('partenaireId', 'nom typePartenaire')
         .populate({
@@ -162,7 +162,7 @@ exports.getAnalyses = asyncHandler(async (req, res) => {
             select: 'status description date createdAt updatedAt', // Inclure createdAt et updatedAt pour historiques
             populate: {
                 path: 'updatedBy',
-                select: 'nom prenom createdAt updatedAt' // Inclure createdAt et updatedAt pour updatedBy
+                select: 'nom prenom logo createdAt updatedAt' // Inclure createdAt et updatedAt pour updatedBy
             },
 
         })
@@ -241,7 +241,7 @@ exports.getAnalysesPatient = asyncHandler(async (req, res) => {
 
 exports.getAnalyse = asyncHandler(async (req, res) => {
     const analyse = await Analyse.findById(req.params.id)
-        .populate('userId', 'nom prenom email adresse dateNaissance age nip telephone createdAt updatedAt sexe ')
+        .populate('userId', 'nom prenom email  adresse dateNaissance age nip telephone createdAt updatedAt sexe ')
         .populate('tests', 'nom description machineA machineB machineA machineB valeurMachineA valeurMachineB interpretationA interpretationB prixAssurance prixPaf, prixIpm coeficiantB  montantRecus')
         .populate('partenaireId', 'nom typePartenaire')
         .populate({
@@ -249,7 +249,7 @@ exports.getAnalyse = asyncHandler(async (req, res) => {
             select: 'status description date createdAt updatedAt', // Inclure createdAt et updatedAt pour historiques
             populate: {
                 path: 'updatedBy',
-                select: 'nom prenom createdAt updatedAt' // Inclure createdAt et updatedAt pour updatedBy
+                select: 'nom prenom logo createdAt updatedAt' // Inclure createdAt et updatedAt pour updatedBy
             },
 
         })

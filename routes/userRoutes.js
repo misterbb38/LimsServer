@@ -1,5 +1,5 @@
 const express = require('express');
-
+const upload = require('../middleware/uploadMiddleware');
 const {
     signup,
     login,
@@ -21,7 +21,7 @@ router.post('/signup', signup);
 router.post('/login', login);
 // Ajoutez cette route dans votre fichier de routeurs, par exemple `userRoutes.js`
 router.get('/patient-stats/:year?', protect, getPatientStatistics);
-router.put('/profile', protect, updateProfileUser);
+router.put('/profile', protect, upload.single('logo'), updateProfileUser);
 router.get('/profile', protect, getProfile);
 router.get('/simpleusers', protect, getSimpleUsers);
 router.get('/personnel', protect, getNonPatientUsers);
