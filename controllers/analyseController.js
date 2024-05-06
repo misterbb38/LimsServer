@@ -169,7 +169,7 @@ exports.getAnalyses = asyncHandler(async (req, res) => {
 
         .populate({
             path: 'resultat', // Modifier ici pour correspondre au champ de votre schéma Analyse qui contient les ID des résultats
-            select: 'valeur interpretationA interpretationB methode dernierResultatAnterieur testId statutInterpretation typePrelevement statutMachine datePrelevement updatedBy createdAt updatedAt',
+            select: 'valeur interpretationA interpretationB methode dernierResultatAnterieur testId statutInterpretation typePrelevement statutMachine datePrelevement updatedBy createdAt updatedAt observations culture gram conclusion',
             populate: [
                 {
                     path: 'testId',
@@ -205,27 +205,30 @@ exports.getAnalysesPatient = asyncHandler(async (req, res) => {
 
     const analyses = await Analyse.find({ userId: userId }) // Assurez-vous que ce champ correspond à votre modèle de base de données
         .populate('userId', 'nom prenom email adresse telephone dateNaissance age nip createdAt updatedAt')
-        .populate('tests', 'nom description machineA machineB interpretation prixAssurance prixPaf, prixIpm coeficiantB montantRecus interpretationA interpretationB')
+        .populate('userId', 'nom prenom email adresse  telephone dateNaissance age nip createdAt updatedAt sexe') // Inclure createdAt et updatedAt
+        .populate('tests', 'nom description machineA machineB valeurMachineA valeurMachineB interpretationA interpretationB prixAssurance prixPaf, prixIpm coeficiantB  montantRecus') // Inclure createdAt et updatedAt
         .populate('partenaireId', 'nom typePartenaire')
         .populate({
             path: 'historiques',
-            select: 'status description date createdAt updatedAt',
+            select: 'status description date createdAt updatedAt', // Inclure createdAt et updatedAt pour historiques
             populate: {
                 path: 'updatedBy',
-                select: 'nom prenom createdAt updatedAt'
+                select: 'nom prenom logo createdAt updatedAt' // Inclure createdAt et updatedAt pour updatedBy
             },
+
         })
+
         .populate({
-            path: 'resultat',
-            select: 'valeur interpretation dernierResultatAnterieur testId statutInterpretation typePrelevement datePrelevement updatedBy interpretationA interpretationB createdAt updatedAt',
+            path: 'resultat', // Modifier ici pour correspondre au champ de votre schéma Analyse qui contient les ID des résultats
+            select: 'valeur interpretationA interpretationB methode dernierResultatAnterieur testId statutInterpretation typePrelevement statutMachine datePrelevement updatedBy createdAt updatedAt observations culture gram conclusion',
             populate: [
                 {
                     path: 'testId',
-                    select: 'nom categories valeur interpretation'
+                    select: 'nom categories machineA machineB valeurMachineA valeurMachineB  valeur interpretationA interpretationB' // Assurez-vous que 'nom' est le champ du schéma Test contenant le nom du test
                 },
                 {
                     path: 'updatedBy',
-                    select: 'nom prenom'
+                    select: 'nom prenom' // Sélection des champs 'nom' et 'prenom' de l'utilisateur qui a mis à jour
                 }
             ]
         });
@@ -256,7 +259,7 @@ exports.getAnalyse = asyncHandler(async (req, res) => {
 
         .populate({
             path: 'resultat', // Modifier ici pour correspondre au champ de votre schéma Analyse qui contient les ID des résultats
-            select: 'valeur interpretation dernierResultatAnterieur methode testId statutInterpretation interpretationA interpretationB typePrelevement statutMachine datePrelevement updatedBy createdAt updatedAt',
+            select: 'valeur interpretation dernierResultatAnterieur methode testId statutInterpretation interpretationA interpretationB typePrelevement statutMachine datePrelevement updatedBy createdAt updatedAt observations culture gram conclusion',
             populate: [
                 {
                     path: 'testId',

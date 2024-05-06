@@ -31,6 +31,10 @@ exports.createResultat = asyncHandler(async (req, res) => {
         analyseId,
         testId,
         patientId,
+        observations, // Ajout du champ observations
+        culture, // Ajout du champ culture
+        gram, // Ajout du champ gram
+        conclusion, // Ajout du champ conclusion
         valeur,
         interpretation,
         methode,
@@ -49,6 +53,10 @@ exports.createResultat = asyncHandler(async (req, res) => {
         analyseId,
         testId,
         patientId,
+        observations, // Ajout du champ observations
+        culture, // Ajout du champ culture
+        gram, // Ajout du champ gram
+        conclusion, // Ajout du champ conclusion
         valeur,
         dernierResultatAnterieur: dernierResultat ? { valeur: dernierResultat.valeur, date: dernierResultat.createdAt } : null,
         interpretation,
