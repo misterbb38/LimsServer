@@ -133,34 +133,8 @@ AnalyseSchema.pre('findOneAndUpdate', async function (next) {
 
 });
 
-AnalyseSchema.pre('findOneAndUpdate', async function captureChangesBeforeUpdate(next) {
-    const originalDoc = await this.model.findOne(this.getQuery()).lean(); // Récupérer le document avant mise à jour
-    const updates = this.getUpdate().$set || {}; // Obtenir les modifications proposées
-    const changes = []; // Stocker les modifications
 
-    // Comparer l'original avec les mises à jour pour détecter les changements
-    Object.keys(updates).forEach(key => {
-        if (JSON.stringify(originalDoc[key]) !== JSON.stringify(updates[key])) {
-            changes.push({
-                field: key,
-                oldValue: originalDoc[key],
-                newValue: updates[key]
-            });
-        }
-    });
 
-    // Si des changements sont détectés, enregistrez-les dans un nouveau document AnalyseChangeLog
-    if (changes.length > 0) {
-        const AnalyseChangeLog = mongoose.model('AnalyseChangeLog');
-        await AnalyseChangeLog.create({
-            analyseId: originalDoc._id,
-            changes: changes,
-            updatedBy: updates.updatedBy // S'assurer que 'updatedBy' est envoyé avec la requête de mise à jour
-        });
-    }
-
-    next(); // Continuer avec la mise à jour de l'analyse
-});
 
 
 
