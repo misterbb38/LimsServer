@@ -36,6 +36,12 @@ const testSchema = new mongoose.Schema({
         min: [0, 'Le coût du test ne peut pas être négatif'],
         default: 200,
     },
+    prixClinique: {
+        type: Number,
+        required: [false, 'Le coût du test est obligatoire'],
+        min: [0, 'Le coût du test ne peut pas être négatif'],
+        default: 200,
+    },
     coeficiantB: {
         type: Number,
         required: [true, 'Le coût du test est obligatoire'],
@@ -46,6 +52,7 @@ const testSchema = new mongoose.Schema({
         required: [true, 'Le statut du test est obligatoire'],
         default: true // Par défaut, les tests sont activés
     },
+    // c est le methode du paramettre(une changement )
     categories: {
         type: String,
         required: false

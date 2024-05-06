@@ -7,6 +7,7 @@ const Partenaire = require('../models/PartenaireModel'); // Chemin à ajuster se
 const EtiquettePartenaire = require('../models/etiquettePartenaireModel'); // Chemin à ajuster selon votre structure
 
 
+
 const Counter = require('../models/Counter');
 
 
@@ -53,7 +54,7 @@ async function getNextId() {
 // });
 
 exports.createAnalyse = asyncHandler(async (req, res) => {
-    const { userId, userOwn, tests, partenaireId, pourcentageCouverture, reduction, typeReduction, pc1, pc2, deplacement, dateDeRecuperation } = req.body;
+    const { userId, userOwn, tests, partenaireId, statusPayement, pourcentageCouverture, reduction, typeReduction, pc1, pc2, deplacement, dateDeRecuperation } = req.body;
 
     let ordonnancePdfPath = req.file ? req.file.path : null;
     let prixTotal = 0;
@@ -80,8 +81,12 @@ exports.createAnalyse = asyncHandler(async (req, res) => {
             prixTotal += test.coeficiantB * test.prixIpm;
         } else if (typePartenaire === 'sococim') {
             prixTotal += test.coeficiantB * test.prixSococim;
+
+        } else if (typePartenaire === 'clinique') {
+            prixTotal += test.coeficiantB * test.prixClinique;
+
         }
-        else { // Pas de partenaire ou autre type
+        else {
             prixTotal += test.coeficiantB * test.prixPaf;
         }
     });
@@ -109,6 +114,7 @@ exports.createAnalyse = asyncHandler(async (req, res) => {
         tests,
         identifiant,
         partenaireId: partenaireId || undefined,
+        statusPayement,
         prixTotal,
         prixPartenaire,
         prixPatient,
@@ -394,7 +400,7 @@ exports.getAnalyse = asyncHandler(async (req, res) => {
 // });
 
 exports.updateAnalyse = asyncHandler(async (req, res) => {
-    const { userId, tests, partenaireId, pourcentageCouverture, reduction, typeReduction, pc1, pc2, deplacement, dateDeRecuperation } = req.body;
+    const { userId, tests, partenaireId, statusPayement, pourcentageCouverture, reduction, typeReduction, pc1, pc2, deplacement, dateDeRecuperation } = req.body;
     let ordonnancePdfPath = req.file ? req.file.path : null;
 
     let analyse = await Analyse.findById(req.params.id);
@@ -433,7 +439,12 @@ exports.updateAnalyse = asyncHandler(async (req, res) => {
             prixTotal += test.coeficiantB * test.prixIpm;
         } else if (typePartenaire === 'sococim') {
             prixTotal += test.coeficiantB * test.prixSococim;
-        } else {
+
+        } else if (typePartenaire === 'clinique') {
+            prixTotal += test.coeficiantB * test.prixClinique;
+
+        }
+        else {
             prixTotal += test.coeficiantB * test.prixPaf;
         }
     });
@@ -457,6 +468,9 @@ exports.updateAnalyse = asyncHandler(async (req, res) => {
 
     if (ordonnancePdfPath) {
         analyse.ordonnancePdf = ordonnancePdfPath;
+    }
+    if (statusPayement) {
+        analyse.statusPayement = statusPayement
     }
 
     // Ajout de la logique pour mettre à jour pc1, pc2, et deplacement
@@ -752,3 +766,7 @@ exports.getTestUsageByMonth = asyncHandler(async (req, res) => {
         data: testUsagePerMonth
     });
 });
+
+
+
+

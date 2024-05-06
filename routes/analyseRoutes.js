@@ -12,7 +12,8 @@ const {
     getTestIdsByAnalyse,
     getTopTests,
     getAnalysesCountByMonth,
-    getTestUsageByMonth
+    getTestUsageByMonth,
+
 } = require('../controllers/analyseController');
 
 const { protect } = require('../middleware/authMiddleware');
@@ -28,6 +29,8 @@ router.get('/analyses-per-month', getAnalysesCountByMonth);
 router.get('/analyseparmois', getAnalysesCountByMonth);
 router.get('/toptests', getTopTests);
 router.get('/patient', protect, getAnalysesPatient);
+
+
 
 // Route pour créer une nouvelle analyse et obtenir toutes les analyses
 router.route('/')

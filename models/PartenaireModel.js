@@ -9,7 +9,7 @@ const PartenaireSchema = new mongoose.Schema({
     typePartenaire: {
         type: String,
         required: true,
-        enum: ['assurance', 'ipm', 'sococim'],
+        enum: ['assurance', 'ipm', 'sococim', 'clinique'],
     }
 
 
