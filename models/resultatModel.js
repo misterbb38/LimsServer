@@ -93,35 +93,61 @@ const resultatSchema = new mongoose.Schema({
             hematies: String,
             cellulesEpitheliales: {
                 type: String,
-
-
             },
             elementsLevuriforme: {
                 type: String,
-
-
             },
             filamentsMyceliens: {
                 type: String,
-
-
             },
             trichomonasVaginalis: {
                 type: String,
-
-
             },
             cristaux: {
                 type: String,
-
-
             },
             cylindres: {
                 type: String,
-
-
             },
+            parasites: {
+                type: String,
+            },
+            trichomonasIntestinales: {
+                type: String,
+            },
+            oeufsDeBilharzies: {
+                type: String,
+            },
+            clueCells: {
+                type: String,
+            },
+            gardnerellaVaginalis: {
+                type: String,
+            },
+            bacillesDeDoderlein: {
+                type: String,
+            },
+            typeDeFlore: {
+                type: String,
+            },
+            ph: {
+                type: String,
+            },
+            rechercheDeStreptocoqueB: {
+                type: String,
+            },
+            monocytes: {
+                type: String,
+            }
         },
+        chimie: {
+            proteinesTotales: String,
+            proteinesArochies: String,
+            glycorachie: String,
+            acideUrique: String,
+            LDH: String,
+        },
+
         antibiogramme: {
             type: Map,
             of: String // 'S', 'I', 'R' pour sensible, intermédiaire, résistant
@@ -129,6 +155,7 @@ const resultatSchema = new mongoose.Schema({
     },
 
     culture: {
+        culture: String,
         description: String, // Par exemple "DGU > 104"
         germeIdentifie: String, // Par exemple "Klebsiella pneumoniae ssp pneumoniae 1"
     },
@@ -159,6 +186,10 @@ const resultatSchema = new mongoose.Schema({
         default: false
     },
     typePrelevement: {
+        type: String,
+        default: ''
+    },
+    lieuPrelevement: {
         type: String,
         default: ''
     },
