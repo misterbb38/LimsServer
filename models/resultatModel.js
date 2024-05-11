@@ -91,6 +91,7 @@ const resultatSchema = new mongoose.Schema({
         microscopique: {
             leucocytes: String,
             hematies: String,
+            unite: String,
             cellulesEpitheliales: {
                 type: String,
             },
@@ -138,7 +139,12 @@ const resultatSchema = new mongoose.Schema({
             },
             monocytes: {
                 type: String,
-            }
+            },
+
+            polynucleairesNeutrophilesAlterees: String,
+            polynucleairesNeutrophilesNonAlterees: String,
+            eosinophiles: String,
+            basophiles: String
         },
         chimie: {
             proteinesTotales: String,
@@ -146,6 +152,15 @@ const resultatSchema = new mongoose.Schema({
             glycorachie: String,
             acideUrique: String,
             LDH: String,
+        },
+        rechercheChlamydia: {
+            naturePrelevement: { type: String, enum: ['cervical', 'urine', 'sperme', 'uretral'] },
+            rechercheAntigeneChlamydiaTrochomatis: { type: String, enum: ['négative', 'positive'] },
+        },
+        rechercheMycoplasmes: {
+            naturePrelevement: String, // Ceci pourrait également être une énumération si nécessaire
+            rechercheUreaplasmaUrealyticum: { type: String, enum: ['négative', 'positive'] },
+            rechercheMycoplasmaHominis: { type: String, enum: ['négative', 'positive'] },
         },
 
         antibiogramme: {
@@ -192,6 +207,10 @@ const resultatSchema = new mongoose.Schema({
     lieuPrelevement: {
         type: String,
         default: ''
+    },
+    datePrelevement: {
+        type: Date,
+
     },
     datePrelevement: Date,
     remarque: {

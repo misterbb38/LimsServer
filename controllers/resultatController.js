@@ -40,6 +40,7 @@ exports.createResultat = asyncHandler(async (req, res) => {
         methode,
         statutInterpretation,
         typePrelevement,
+        lieuPrelevement,
         datePrelevement,
         remarque,
         updatedBy
@@ -63,6 +64,7 @@ exports.createResultat = asyncHandler(async (req, res) => {
         methode,
         statutInterpretation,
         typePrelevement,
+        lieuPrelevement,
         datePrelevement,
         remarque,
         updatedBy
