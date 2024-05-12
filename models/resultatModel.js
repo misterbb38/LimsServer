@@ -104,15 +104,19 @@ const resultatSchema = new mongoose.Schema({
             trichomonasVaginalis: {
                 type: String,
             },
+            // autres champs microscopiques...
+            parasitesDetails: [{ type: String }],
+            cristauxDetails: [{ type: String }],
             cristaux: {
-                type: String,
-            },
-            cylindres: {
                 type: String,
             },
             parasites: {
                 type: String,
             },
+            cylindres: {
+                type: String,
+            },
+
             trichomonasIntestinales: {
                 type: String,
             },
@@ -154,13 +158,13 @@ const resultatSchema = new mongoose.Schema({
             LDH: String,
         },
         rechercheChlamydia: {
-            naturePrelevement: { type: String, enum: ['cervical', 'urine', 'sperme', 'uretral'] },
-            rechercheAntigeneChlamydiaTrochomatis: { type: String, enum: ['négative', 'positive'] },
+            naturePrelevement: { type: String },
+            rechercheAntigeneChlamydiaTrochomatis: { type: String },
         },
         rechercheMycoplasmes: {
             naturePrelevement: String, // Ceci pourrait également être une énumération si nécessaire
-            rechercheUreaplasmaUrealyticum: { type: String, enum: ['négative', 'positive'] },
-            rechercheMycoplasmaHominis: { type: String, enum: ['négative', 'positive'] },
+            rechercheUreaplasmaUrealyticum: { type: String },
+            rechercheMycoplasmaHominis: { type: String },
         },
 
         antibiogramme: {
