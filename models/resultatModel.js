@@ -87,7 +87,9 @@ const resultatSchema = new mongoose.Schema({
         required: true
     },
     observations: {
-        macroscopique: String,
+        macroscopique: [{
+            type: String
+        }],
         microscopique: {
             leucocytes: String,
             hematies: String,
