@@ -597,7 +597,7 @@ exports.getTestIdsByAnalyse = asyncHandler(async (req, res) => {
     try {
         // Ajoutez les champs 'machineA' et 'machineB' dans le populate pour les récupérer
         const analyse = await Analyse.findById(analyseId)
-            .populate('tests', '_id nom machineA machineB');
+            .populate('tests', '_id nom machineA machineB conclusions');
 
         if (!analyse) {
             return res.status(404).json({ success: false, message: 'Analyse not found' });

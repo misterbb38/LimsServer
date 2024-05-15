@@ -57,6 +57,10 @@ const testSchema = new mongoose.Schema({
         type: String,
         required: false
     },
+    conclusions: {
+        type: [String], // Tableau de chaînes pour stocker les conclusions possibles
+        required: false
+    },
     machineA: {
         type: String,
         required: false

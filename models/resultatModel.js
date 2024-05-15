@@ -169,16 +169,19 @@ const resultatSchema = new mongoose.Schema({
             rechercheMycoplasmaHominis: { type: String },
         },
 
-        antibiogramme: {
-            type: Map,
-            of: String // 'S', 'I', 'R' pour sensible, intermédiaire, résistant
-        }
+
     },
 
     culture: {
         culture: String,
         description: String, // Par exemple "DGU > 104"
-        germeIdentifie: String, // Par exemple "Klebsiella pneumoniae ssp pneumoniae 1"
+        germeIdentifie: [{
+            nom: { type: String, required: true },
+            antibiogramme: {
+                type: Map,
+                of: String // Chaque germe peut avoir son propre antibiogramme avec 'S', 'I', 'R'
+            }
+        }]
     },
 
     gram: {

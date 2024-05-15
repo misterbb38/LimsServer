@@ -43,7 +43,7 @@ const readExcelFile = require('read-excel-file/node');
 // });
 exports.getTests = asyncHandler(async (req, res) => {
     const page = parseInt(req.query.page, 10) || 1;
-    const limit = 25;
+    const limit = 500;
     const skip = (page - 1) * limit;
     const { search } = req.query;  // Récupération du paramètre de recherche depuis la requête
 
@@ -124,6 +124,7 @@ exports.createTest = asyncHandler(async (req, res) => {
         prixIpm,
         prixPaf,
         prixSococim,
+        prixClinique,
         coeficiantB,
         status,
         categories,
@@ -132,7 +133,8 @@ exports.createTest = asyncHandler(async (req, res) => {
         machineA,
         machineB,
         interpretationA,
-        interpretationB
+        interpretationB,
+        conclusions
     } = req.body;
 
     // Création d'une nouvelle instance du modèle Test
@@ -143,6 +145,7 @@ exports.createTest = asyncHandler(async (req, res) => {
         prixIpm,
         prixPaf,
         prixSococim,
+        prixClinique,
         coeficiantB,
         status,
         categories,   // Ajout du champ categories
@@ -151,7 +154,8 @@ exports.createTest = asyncHandler(async (req, res) => {
         machineA,
         machineB,      // Ajout du champ valeur
         interpretationA,
-        interpretationB // Ajout du champ interpretation
+        interpretationB, // Ajout du champ interpretation
+        conclusions
     });
 
     // Sauvegarde du nouveau test dans la base de données
