@@ -175,7 +175,7 @@ exports.getAnalyses = asyncHandler(async (req, res) => {
 
         .populate({
             path: 'resultat', // Modifier ici pour correspondre au champ de votre schéma Analyse qui contient les ID des résultats
-            select: 'valeur interpretationA interpretationB methode dernierResultatAnterieur testId statutInterpretation typePrelevement lieuPrelevement statutMachine datePrelevement updatedBy createdAt updatedAt observations culture gram conclusion',
+            select: 'valeur interpretationA interpretationB methode dernierResultatAnterieur testId statutInterpretation typePrelevement lieuPrelevement statutMachine datePrelevement updatedBy createdAt updatedAt observations culture gram conclusion remarque',
             populate: [
                 {
                     path: 'testId',
@@ -226,7 +226,7 @@ exports.getAnalysesPatient = asyncHandler(async (req, res) => {
 
         .populate({
             path: 'resultat', // Modifier ici pour correspondre au champ de votre schéma Analyse qui contient les ID des résultats
-            select: 'valeur interpretationA interpretationB methode dernierResultatAnterieur testId statutInterpretation typePrelevement lieuPrelevement statutMachine datePrelevement updatedBy createdAt updatedAt observations culture gram conclusion',
+            select: 'valeur remarque interpretationA interpretationB methode dernierResultatAnterieur testId statutInterpretation typePrelevement lieuPrelevement statutMachine datePrelevement updatedBy createdAt updatedAt observations culture gram conclusion',
             populate: [
                 {
                     path: 'testId',
@@ -265,7 +265,7 @@ exports.getAnalyse = asyncHandler(async (req, res) => {
 
         .populate({
             path: 'resultat', // Modifier ici pour correspondre au champ de votre schéma Analyse qui contient les ID des résultats
-            select: 'valeur interpretation dernierResultatAnterieur methode testId statutInterpretation interpretationA interpretationB typePrelevement lieuPrelevement statutMachine datePrelevement updatedBy createdAt updatedAt observations culture gram conclusion',
+            select: 'valeur remarque interpretation dernierResultatAnterieur methode testId statutInterpretation interpretationA interpretationB typePrelevement lieuPrelevement statutMachine datePrelevement updatedBy createdAt updatedAt observations culture gram conclusion',
             populate: [
                 {
                     path: 'testId',

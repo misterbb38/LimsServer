@@ -2,6 +2,7 @@ const express = require('express');
 // Importation des fonctions du contrôleur de test
 const {
     getTests,
+    getTestsAnalyse,
     createTest,
     deleteTest,
     updateTest,
@@ -17,6 +18,7 @@ const upload = multer({ dest: 'uploads/' });
 const router = express.Router();
 
 // Définition des routes pour les tests
+router.route('/analyse').get(getTestsAnalyse)
 router.route('/')
     .get(getTests) // Obtenir tous les tests, accessible publiquement
     .post(protect, createTest); // Créer un nouveau test, nécessite une authentification et peut-être des vérifications de rôles
