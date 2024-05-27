@@ -11,7 +11,7 @@ const EtiquettePartenaire = require('../models/etiquettePartenaireModel'); // Ch
 const Counter = require('../models/Counter');
 
 
-// Fonction pour obtenir le prochain identifiant séquentiel
+// Fonction pour obtenir le prochain identifiant console.log
 async function getNextId() {
     const counter = await Counter.findByIdAndUpdate('analyseId', { $inc: { seq: 1 } }, { new: true, upsert: true });
     return counter.seq.toString(36).padStart(5, '0').toUpperCase();
