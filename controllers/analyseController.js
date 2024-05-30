@@ -18,43 +18,8 @@ async function getNextId() {
 }
 
 
-// Créer une nouvelle analyse, avec possibilité d'ajouter un fichier PDF d'ordonnance
-// Créer une nouvelle analyse et un historique initial
-// exports.createAnalyse = asyncHandler(async (req, res) => {
-//     const { userId, tests } = req.body;
-//     let ordonnancePdfPath = req.file ? req.file.path : null;
-
-//     const identifiant = await getNextId(); // Générer l'identifiant
-
-
-//     // Créer la nouvelle analyse
-//     const analyse = await Analyse.create({
-//         userId,
-//         tests,
-//         identifiant,
-//         ordonnancePdf: ordonnancePdfPath
-//     });
-
-//     // Créer un nouvel historique avec le statut initial et l'associer à l'analyse créée
-//     const historique = await Historique.create({
-//         analyseId: analyse._id,
-//         status: "Création",
-//         description: "Création du processus",
-//         updatedBy: userId // Supposant que l'utilisateur créant l'analyse est celui qui met à jour l'historique
-//     });
-
-//     // Assurez-vous d'ajouter l'historique créé à l'analyse
-//     analyse.historiques.push(historique._id);
-//     await analyse.save(); // Sauvegardez l'analyse avec la référence à l'historique
-
-//     res.status(201).json({
-//         success: true,
-//         data: analyse
-//     });
-// });
-
 exports.createAnalyse = asyncHandler(async (req, res) => {
-    const { userId, userOwn, tests, partenaireId, statusPayement, pourcentageCouverture, reduction, typeReduction, pc1, pc2, deplacement, dateDeRecuperation } = req.body;
+    const { userId, userOwn, tests, partenaireId, statusPayement, avance, pourcentageCouverture, reduction, typeReduction, pc1, pc2, deplacement, dateDeRecuperation } = req.body;
 
     let ordonnancePdfPath = req.file ? req.file.path : null;
     let prixTotal = 0;
@@ -115,6 +80,7 @@ exports.createAnalyse = asyncHandler(async (req, res) => {
         identifiant,
         partenaireId: partenaireId || undefined,
         statusPayement,
+        avance,
         prixTotal,
         prixPartenaire,
         prixPatient,
@@ -290,117 +256,9 @@ exports.getAnalyse = asyncHandler(async (req, res) => {
     });
 });
 
-// Mettre à jour une analyse (seulement la date, les tests ou l'ordonnancePdf)
-
-// exports.updateAnalyse = asyncHandler(async (req, res) => {
-//     const { userId, tests, partenaireId, pourcentageCouverture, reduction, typeReduction } = req.body;
-//     let ordonnancePdfPath = req.file ? req.file.path : null;
-
-//     // Récupérer l'analyse existante
-//     let analyse = await Analyse.findById(req.params.id);
-
-//     if (!analyse) {
-//         res.status(404);
-//         throw new Error('Analyse non trouvée');
-//     }
-
-//     let prixTotal = 0;
-//     let prixPartenaire = 0;
-//     let prixPatient = 0;
-//     let typePartenaire = null;
-
-//     // Vérifier si un partenaire est choisi
-//     if (partenaireId) {
-//         const partenaire = await Partenaire.findById(partenaireId);
-//         typePartenaire = partenaire ? partenaire.typePartenaire : null;
-//     }
-
-//     // Récupérer les détails des tests si les tests sont mis à jour
-//     const testsDetails = tests ? await Test.find({ '_id': { $in: tests } }) : analyse.tests;
-
-//     // Calcul du prix total en fonction du type de partenaire
-//     testsDetails.forEach(test => {
-//         if (typePartenaire === 'assurance') {
-//             prixTotal += test.coeficiantB * test.prixAssurance;
-//         } else if (typePartenaire === 'ipm') {
-//             prixTotal += test.coeficiantB * test.prixIpm;
-//         } else {
-//             prixTotal += test.coeficiantB * test.prixPaf;
-//         }
-//     });
-
-//     // Calcul du prix partenaire et du prix patient
-//     if (pourcentageCouverture > 0 && typePartenaire) {
-//         prixPartenaire = (prixTotal * pourcentageCouverture) / 100;
-//         prixPatient = prixTotal - prixPartenaire;
-//     } else {
-//         prixPatient = prixTotal;
-//         prixPartenaire = 0;
-//     }
-
-//     // Appliquer la réduction sur le prixPatient si applicable
-//     if (reduction && typeReduction) {
-//         if (typeReduction === 'montant') {
-//             prixPatient = Math.max(0, prixPatient - reduction);
-//         } else if (typeReduction === 'pourcentage') {
-//             prixPatient = Math.max(0, prixPatient - (prixPatient * reduction / 100));
-//         }
-//     }
-
-//     // Préparer les données mises à jour
-//     let updateData = {
-//         tests,
-//         partenaireId: partenaireId || undefined,
-//         prixTotal,
-//         prixPartenaire,
-//         pourcentageCouverture,
-//         prixPatient,
-//         reduction, // inclure la réduction dans les données mises à jour
-//         typeReduction // inclure le type de réduction dans les données mises à jour
-
-//     };
-
-//     if (ordonnancePdfPath) {
-//         updateData.ordonnancePdf = ordonnancePdfPath;
-//     }
-
-//     // Mise à jour de l'analyse avec les nouvelles valeurs
-//     analyse = await Analyse.findByIdAndUpdate(req.params.id, updateData, { new: true, runValidators: true });
-
-//     // Créer ou mettre à jour l'étiquette partenaire si nécessaire
-//     if (partenaireId && prixPartenaire > 0) {
-//         const etiquetteExistante = await EtiquettePartenaire.findOne({ analyseId: analyse._id, partenaireId });
-//         if (etiquetteExistante) {
-//             await EtiquettePartenaire.findByIdAndUpdate(etiquetteExistante._id, { sommeAPayer: prixPartenaire }, { new: true });
-//         } else {
-//             await EtiquettePartenaire.create({
-//                 analyseId: analyse._id,
-//                 partenaireId,
-//                 sommeAPayer: prixPartenaire
-//             });
-//         }
-//     }
-
-//     // Ajouter un historique d'update
-//     const historique = await Historique.create({
-//         analyseId: analyse._id,
-//         status: "Modification",
-//         description: "les information de l'analyse a été modifiée",
-//         updatedBy: userId
-//     });
-
-//     // Assurez-vous d'ajouter l'historique créé à l'analyse
-//     analyse.historiques.push(historique._id);
-//     await analyse.save(); // Sauvegardez l'analyse avec la référence à l'historique
-
-//     res.status(200).json({
-//         success: true,
-//         data: analyse
-//     });
-// });
 
 exports.updateAnalyse = asyncHandler(async (req, res) => {
-    const { userId, tests, partenaireId, statusPayement, pourcentageCouverture, reduction, typeReduction, pc1, pc2, deplacement, dateDeRecuperation } = req.body;
+    const { userId, tests, partenaireId, statusPayement, avance, pourcentageCouverture, reduction, typeReduction, pc1, pc2, deplacement, dateDeRecuperation } = req.body;
     let ordonnancePdfPath = req.file ? req.file.path : null;
 
     let analyse = await Analyse.findById(req.params.id);
@@ -489,24 +347,11 @@ exports.updateAnalyse = asyncHandler(async (req, res) => {
     analyse.prixPatient = prixPatient;
     analyse.reduction = reduction;
     analyse.typeReduction = typeReduction;
+    analyse.avance = avance;
 
     await analyse.save();
 
-    // if (partenaireId && prixPartenaire > 0) {
-    //     let etiquettePartenaire = await EtiquettePartenaire.findOne({ analyseId: analyse._id, partenaireId });
-    //     if (etiquettePartenaire) {
-    //         etiquettePartenaire.sommeAPayer = prixPartenaire;
-    //         await etiquettePartenaire.save();
-    //     } else {
-    //         await EtiquettePartenaire.create({
-    //             analyseId: analyse._id,
-    //             partenaireId,
-    //             sommeAPayer: prixPartenaire
-    //         });
-    //     }
-    // }
-
-    // Logique pour mise à jour ou suppression de l'étiquette partenaire
+   
     let etiquettePartenaire = await EtiquettePartenaire.findOne({ analyseId: analyse._id });
     if (etiquettePartenaire) {
         if (partenaireId && prixPartenaire > 0) {
@@ -564,28 +409,6 @@ exports.deleteAnalyse = asyncHandler(async (req, res) => {
     });
 });
 
-
-// Contrôleur pour obtenir les IDs de tests d'une analyse spécifique
-// exports.getTestIdsByAnalyse = asyncHandler(async (req, res) => {
-//     const { analyseId } = req.params;
-
-//     if (!mongoose.isValidObjectId(analyseId)) {
-//         return res.status(400).json({ success: false, message: 'Invalid Analyse ID' });
-//     }
-
-//     try {
-//         const analyse = await Analyse.findById(analyseId).populate('tests', '_id nom machineA machineB');
-
-//         if (!analyse) {
-//             return res.status(404).json({ success: false, message: 'Analyse not found' });
-//         }
-
-//         res.status(200).json({ success: true, data: analyse.tests });
-//     } catch (error) {
-//         console.error("Error retrieving test IDs:", error);
-//         res.status(500).json({ success: false, message: "Server error" });
-//     }
-// });
 
 exports.getTestIdsByAnalyse = asyncHandler(async (req, res) => {
     const { analyseId } = req.params;
