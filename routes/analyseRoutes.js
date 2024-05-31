@@ -6,6 +6,7 @@ const {
     createAnalyse,
     getAnalyses,
     getAnalysesPatient,
+    getAnalysesClinique,
     getAnalyse,
     updateAnalyse,
     deleteAnalyse,
@@ -13,6 +14,7 @@ const {
     getTopTests,
     getAnalysesCountByMonth,
     getTestUsageByMonth,
+    
 
 } = require('../controllers/analyseController');
 
@@ -29,6 +31,7 @@ router.get('/analyses-per-month', getAnalysesCountByMonth);
 router.get('/analyseparmois', getAnalysesCountByMonth);
 router.get('/toptests', getTopTests);
 router.get('/patient', protect, getAnalysesPatient);
+router.get('/partenaire', protect, getAnalysesClinique);
 
 
 

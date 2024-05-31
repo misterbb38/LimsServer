@@ -39,8 +39,12 @@ const userSchema = new mongoose.Schema({
   },
   userType: {
     type: String,
-    enum: ['patient', 'superadmin', 'medecin', 'technicien', 'preleveur', 'accueil'],
+    enum: ['patient', 'superadmin', 'medecin', 'technicien', 'preleveur', 'accueil', 'partenaire'],
     default: 'patient',
+  },
+  partenaireId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Partenaire',
   },
   dateNaissance: {
     type: Date,

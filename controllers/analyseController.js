@@ -127,7 +127,7 @@ exports.createAnalyse = asyncHandler(async (req, res) => {
 exports.getAnalyses = asyncHandler(async (req, res) => {
     const analyses = await Analyse.find()
         .populate('userId', 'nom prenom email adresse  telephone dateNaissance age nip createdAt updatedAt sexe') // Inclure createdAt et updatedAt
-        .populate('tests', 'nom description machineA machineB valeurMachineA valeurMachineB interpretationA interpretationB prixAssurance prixPaf, prixIpm coeficiantB  montantRecus') // Inclure createdAt et updatedAt
+        .populate('tests', 'nom description machineA machineB valeurMachineA valeurMachineB interpretationA interpretationB prixAssurance prixPaf prixSococim  prixClinique prixIpm coeficiantB  montantRecus') // Inclure createdAt et updatedAt
         .populate('partenaireId', 'nom typePartenaire')
         .populate({
             path: 'historiques',
@@ -178,7 +178,7 @@ exports.getAnalysesPatient = asyncHandler(async (req, res) => {
     const analyses = await Analyse.find({ userId: userId }) // Assurez-vous que ce champ correspond à votre modèle de base de données
         .populate('userId', 'nom prenom email adresse telephone dateNaissance age nip createdAt updatedAt')
         .populate('userId', 'nom prenom email adresse  telephone dateNaissance age nip createdAt updatedAt sexe') // Inclure createdAt et updatedAt
-        .populate('tests', 'nom description machineA machineB valeurMachineA valeurMachineB interpretationA interpretationB prixAssurance prixPaf, prixIpm coeficiantB  montantRecus') // Inclure createdAt et updatedAt
+        .populate('tests', 'nom description machineA machineB valeurMachineA valeurMachineB interpretationA interpretationB prixAssurance prixPaf prixIpm prixSococim  prixClinique coeficiantB  montantRecus') // Inclure createdAt et updatedAt
         .populate('partenaireId', 'nom typePartenaire')
         .populate({
             path: 'historiques',
@@ -212,12 +212,73 @@ exports.getAnalysesPatient = asyncHandler(async (req, res) => {
     });
 });
 
+
+// analyse  par clinique
+
+exports.getAnalysesClinique = asyncHandler(async (req, res) => {
+    if (!req.user) {
+        return res.status(401).json({
+            success: false,
+            message: "Authentication required"
+        });
+    }
+
+    if (req.user.userType !== 'partenaire') {
+        return res.status(403).json({
+            success: false,
+            message: "Access forbidden: Clinique user type required"
+        });
+    }
+
+    const partenaireId = req.user.partenaireId; // Récupérer le partenaire ID de l'utilisateur connecté
+
+    if (!partenaireId) {
+        return res.status(400).json({
+            success: false,
+            message: "Partenaire ID is required for clinique users"
+        });
+    }
+
+    const analyses = await Analyse.find({ partenaireId: partenaireId })
+        .populate('userId', 'nom prenom email adresse telephone dateNaissance age nip createdAt updatedAt sexe')
+        .populate('tests', 'nom description machineA machineB valeurMachineA valeurMachineB interpretationA interpretationB prixAssurance prixPaf prixIpm prixSococim  prixClinique coeficiantB montantRecus')
+        .populate('partenaireId', 'nom typePartenaire')
+        .populate({
+            path: 'historiques',
+            select: 'status description date createdAt updatedAt',
+            populate: {
+                path: 'updatedBy',
+                select: 'nom prenom logo createdAt updatedAt'
+            }
+        })
+        .populate({
+            path: 'resultat',
+            select: 'valeur remarque interpretationA interpretationB methode dernierResultatAnterieur testId statutInterpretation typePrelevement lieuPrelevement statutMachine datePrelevement updatedBy createdAt updatedAt observations culture gram conclusion',
+            populate: [
+                {
+                    path: 'testId',
+                    select: 'nom categories machineA machineB valeurMachineA valeurMachineB valeur interpretationA interpretationB'
+                },
+                {
+                    path: 'updatedBy',
+                    select: 'nom prenom'
+                }
+            ]
+        });
+
+    res.status(200).json({
+        success: true,
+        count: analyses.length,
+        data: analyses
+    });
+});
+
 // Obtenir une analyse spécifique par ID
 
 exports.getAnalyse = asyncHandler(async (req, res) => {
     const analyse = await Analyse.findById(req.params.id)
         .populate('userId', 'nom prenom email  adresse dateNaissance age nip telephone createdAt updatedAt sexe ')
-        .populate('tests', 'nom description machineA machineB machineA machineB valeurMachineA valeurMachineB interpretationA interpretationB prixAssurance prixPaf, prixIpm coeficiantB  montantRecus')
+        .populate('tests', 'nom description machineA machineB machineA machineB valeurMachineA valeurMachineB interpretationA interpretationB prixSococime prixAssurance prixPaf prixIpm prixClinique coeficiantB  montantRecus')
         .populate('partenaireId', 'nom typePartenaire')
         .populate({
             path: 'historiques',

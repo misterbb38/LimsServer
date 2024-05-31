@@ -25,7 +25,7 @@ const generateToken = (id) => {
 
 // Inscription d'un nouvel utilisateur
 exports.signup = asyncHandler(async (req, res) => {
-  const { nom, prenom, email, dateNaissance, password, adresse, telephone, userType, age } = req.body;
+  const { nom, prenom, email, dateNaissance, password, adresse, telephone, userType,partenaireId, age } = req.body;
 
   // Vérifier si l'utilisateur existe déjà
   const userExists = await User.findOne({ telephone });
@@ -45,7 +45,8 @@ exports.signup = asyncHandler(async (req, res) => {
     telephone,
     age,
     nip,
-    userType
+    userType,
+    partenaireId,
 
   });
 
@@ -59,7 +60,7 @@ exports.signup = asyncHandler(async (req, res) => {
       telephone: user.telephone,
       adresse: user.adresse,
       userType: user.userType,
-
+      partenaireId: user.partenaireId, // Inclure le partenaireId dans la réponse
       token: generateToken(user._id), // Envoi du token JWT pour authentification immédiate
     });
   } else {
@@ -89,6 +90,7 @@ exports.login = asyncHandler(async (req, res) => {
       adresse: user.adresse,
       devise: user.devise,
       userType: user.userType, // Envoyer le type d'utilisateur pour utilisation côté front
+      partenaireId: user.partenaireId, // Inclure le partenaireId dans la réponse
       logo: user.logo,
       token: generateToken(user._id), // Générer un nouveau token pour la session
     });
@@ -127,49 +129,7 @@ exports.getProfile = asyncHandler(async (req, res) => {
 });
 
 
-// Modifier le profil de l'utilisateur
-// exports.updateProfile = asyncHandler(async (req, res) => {
-//   const user = await User.findById(req.user._id);
 
-//   if (user) {
-//     user.nom = req.body.nom || user.nom;
-//     user.prenom = req.body.prenom || user.prenom;
-//     user.email = req.body.email || user.email;
-//     user.nomEntreprise = req.body.nomEntreprise || user.nomEntreprise;
-//     user.adresse = req.body.adresse || user.adresse;
-//     user.telephone = req.body.telephone || user.telephone
-//     user.userType = req.body.userType || user.userType;
-
-//     // Mettre à jour le logo seulement si un nouveau fichier a été uploadé
-//     if (req.file) {
-//       user.logo = req.file.path;
-//     }
-//     user.devise = req.body.devise || user.devise;
-
-//     // Vérifiez si un nouveau mot de passe est fourni
-//     if (req.body.password) {
-//       // Hacher le nouveau mot de passe avant de le sauvegarder
-//       const salt = await bcrypt.genSalt(10);
-//       user.password = await bcrypt.hash(req.body.password, salt);
-//     }
-
-//     const updatedUser = await user.save();
-
-//     res.json({
-//       _id: updatedUser._id,
-//       nom: updatedUser.nom,
-//       prenom: updatedUser.prenom,
-//       email: updatedUser.email,
-//       adresse: updatedUser.adresse,
-//       telephone: updatedUser.telephone,
-//       userType: updatedUser.userType,
-//       token: generateToken(updatedUser._id), // Générer un nouveau token avec le profil mis à jour
-//     });
-//   } else {
-//     res.status(404);
-//     throw new Error('Utilisateur non trouvé.');
-//   }
-// });
 
 exports.updateProfile = asyncHandler(async (req, res) => {
   const userId = req.params.id;
