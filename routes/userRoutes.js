@@ -7,6 +7,7 @@ const {
     updateProfile,
     deleteUser,
     getSimpleUsers,
+    getSimplePartenaireClinique,
     getNonPatientUsers,
     updateProfileUser,
     getPatientStatistics,
@@ -24,6 +25,7 @@ router.get('/patient-stats/:year?', protect, getPatientStatistics);
 router.put('/profile', protect, upload.single('logo'), updateProfileUser);
 router.get('/profile', protect, getProfile);
 router.get('/simpleusers', protect, getSimpleUsers);
+router.get('/partenaireclinique', protect, getSimplePartenaireClinique);
 router.get('/personnel', protect, getNonPatientUsers);
 router.route('/:id').
     get(protect, getUserById)

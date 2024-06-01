@@ -240,18 +240,7 @@ exports.updateProfileUser = asyncHandler(async (req, res) => {
 });
 
 
-// Obtenir un utilisateur par ID
-// exports.getUserById = asyncHandler(async (req, res) => {
 
-
-//   const user = await User.findById(req.params._id).select('-password'); // Exclure le mot de passe du résultat
-
-//   if (user) {
-//     res.json({ success: true, data: user, message: 'utilisateur existe' });
-//   } else {
-//     res.status(404).json({ message: 'Utilisateur non trouvé.' });
-//   }
-// });
 
 exports.getUserById = asyncHandler(async (req, res) => {
   const userId = req.params.id; // Récupérer l'ID de l'utilisateur à partir des paramètres de la route
@@ -290,6 +279,16 @@ exports.deleteUser = asyncHandler(async (req, res) => {
 // Obtenir tous les utilisateurs de type patient
 exports.getSimpleUsers = asyncHandler(async (req, res) => {
   const simpleUsers = await User.find({ userType: 'patient' }).select('-password');
+  res.status(200).json({ success: true, data: simpleUsers });
+});
+
+// obtenir le partenaire/clinique
+
+exports.getSimplePartenaireClinique = asyncHandler(async (req, res) => {
+  const simpleUsers = await User.find({ userType: 'partenaire' })
+    .select('-password')
+    .populate('partenaireId', 'nom'); // Populer le champ partenaireId pour obtenir le nom du partenaire
+
   res.status(200).json({ success: true, data: simpleUsers });
 });
 

@@ -18,108 +18,216 @@ async function getNextId() {
 }
 
 
-exports.createAnalyse = asyncHandler(async (req, res) => {
-    const { userId, userOwn, tests, partenaireId, statusPayement, avance, pourcentageCouverture, reduction, typeReduction, pc1, pc2, deplacement, dateDeRecuperation } = req.body;
+// exports.createAnalyse = asyncHandler(async (req, res) => {
+//     const { userId, userOwn, tests, partenaireId, statusPayement, avance, pourcentageCouverture, reduction, typeReduction, pc1, pc2, deplacement, dateDeRecuperation } = req.body;
 
+//     let ordonnancePdfPath = req.file ? req.file.path : null;
+//     let prixTotal = 0;
+//     let prixPartenaire = 0;
+//     let prixPatient = 0;
+
+//     const identifiant = await getNextId(); // Générer l'identifiant
+
+//     // Récupérer les détails des tests
+//     const testsDetails = await Test.find({ '_id': { $in: tests } });
+
+//     // Vérifier si un partenaire est choisi
+//     let typePartenaire = null;
+//     if (partenaireId) {
+//         const partenaire = await Partenaire.findById(partenaireId);
+//         typePartenaire = partenaire.typePartenaire;
+//     }
+
+//     // Calcul du prix total en fonction du type de partenaire
+//     testsDetails.forEach(test => {
+//         if (typePartenaire === 'assurance') {
+//             prixTotal += test.coeficiantB * test.prixAssurance;
+//         } else if (typePartenaire === 'ipm') {
+//             prixTotal += test.coeficiantB * test.prixIpm;
+//         } else if (typePartenaire === 'sococim') {
+//             prixTotal += test.coeficiantB * test.prixSococim;
+
+//         } else if (typePartenaire === 'clinique') {
+//             prixTotal += test.coeficiantB * test.prixClinique;
+
+//         }
+//         else {
+//             prixTotal += test.coeficiantB * test.prixPaf;
+//         }
+//     });
+
+//     // Calcul du prix partenaire et du prix patient
+//     if (pourcentageCouverture > 0 && typePartenaire) {
+//         prixPartenaire = (prixTotal * pourcentageCouverture) / 100;
+//         prixPatient = prixTotal - prixPartenaire;
+//     } else {
+//         prixPatient = prixTotal;
+//     }
+
+//     // Appliquer la réduction sur le prixPatient si applicable
+//     if (reduction && typeReduction) {
+//         if (typeReduction === 'montant') {
+//             prixPatient = Math.max(0, prixPatient - reduction);
+//         } else if (typeReduction === 'pourcentage') {
+//             prixPatient = Math.max(0, prixPatient - (prixPatient * reduction / 100));
+//         }
+//     }
+
+//     // Création de l'analyse
+//     const nouvelleAnalyse = await Analyse.create({
+//         userId,
+//         tests,
+//         identifiant,
+//         partenaireId: partenaireId || undefined,
+//         statusPayement,
+//         avance,
+//         prixTotal,
+//         prixPartenaire,
+//         prixPatient,
+//         reduction,
+//         pc1,
+//         pc2,
+//         deplacement,
+//         pourcentageCouverture,
+//         dateDeRecuperation,
+//         ordonnancePdf: ordonnancePdfPath
+//     });
+
+//     // Création d'une étiquette partenaire si nécessaire
+//     if (partenaireId && prixPartenaire > 0) {
+//         await EtiquettePartenaire.create({
+//             analyseId: nouvelleAnalyse._id,
+//             partenaireId,
+//             sommeAPayer: prixPartenaire
+//         });
+//     }
+
+//     // Créer un nouvel historique avec le statut initial et l'associer à l'analyse créée
+//     const historique = await Historique.create({
+//         analyseId: nouvelleAnalyse._id,
+//         status: "Création",
+//         description: "Création du processus",
+//         updatedBy: userOwn // Supposant que l'utilisateur créant l'analyse est celui qui met à jour l'historique
+//     });
+
+//     // Assurez-vous d'ajouter l'historique créé à l'analyse
+//     nouvelleAnalyse.historiques.push(historique._id);
+//     await nouvelleAnalyse.save(); // Sauvegardez l'analyse avec la référence à l'historique
+
+//     res.status(201).json({
+//         success: true,
+//         message: "Analyse créée avec succès",
+//         data: nouvelleAnalyse
+//     });
+// });
+
+exports.createAnalyse = asyncHandler(async (req, res) => {
+    const { userId, userOwn, tests, partenaireId, statusPayement, avance = 0, pourcentageCouverture = 0, reduction = 0, typeReduction, pc1 = 0, pc2 = 0, deplacement = 0, dateDeRecuperation } = req.body;
+  
     let ordonnancePdfPath = req.file ? req.file.path : null;
     let prixTotal = 0;
     let prixPartenaire = 0;
     let prixPatient = 0;
-
+  
     const identifiant = await getNextId(); // Générer l'identifiant
-
+  
     // Récupérer les détails des tests
     const testsDetails = await Test.find({ '_id': { $in: tests } });
-
+  
     // Vérifier si un partenaire est choisi
     let typePartenaire = null;
     if (partenaireId) {
-        const partenaire = await Partenaire.findById(partenaireId);
-        typePartenaire = partenaire.typePartenaire;
+      const partenaire = await Partenaire.findById(partenaireId);
+      typePartenaire = partenaire.typePartenaire;
     }
-
+  
     // Calcul du prix total en fonction du type de partenaire
     testsDetails.forEach(test => {
-        if (typePartenaire === 'assurance') {
-            prixTotal += test.coeficiantB * test.prixAssurance;
-        } else if (typePartenaire === 'ipm') {
-            prixTotal += test.coeficiantB * test.prixIpm;
-        } else if (typePartenaire === 'sococim') {
-            prixTotal += test.coeficiantB * test.prixSococim;
-
-        } else if (typePartenaire === 'clinique') {
-            prixTotal += test.coeficiantB * test.prixClinique;
-
-        }
-        else {
-            prixTotal += test.coeficiantB * test.prixPaf;
-        }
+      if (typePartenaire === 'assurance') {
+        prixTotal += test.coeficiantB * test.prixAssurance;
+      } else if (typePartenaire === 'ipm') {
+        prixTotal += test.coeficiantB * test.prixIpm;
+      } else if (typePartenaire === 'sococim') {
+        prixTotal += test.coeficiantB * test.prixSococim;
+      } else if (typePartenaire === 'clinique') {
+        prixTotal += test.coeficiantB * test.prixClinique;
+      } else {
+        prixTotal += test.coeficiantB * test.prixPaf;
+      }
     });
-
+  
+    // Ajouter pc1, pc2 et deplacement au prix total
+    prixTotal += Number(pc1) + Number(pc2) + Number(deplacement);
+  
     // Calcul du prix partenaire et du prix patient
     if (pourcentageCouverture > 0 && typePartenaire) {
-        prixPartenaire = (prixTotal * pourcentageCouverture) / 100;
-        prixPatient = prixTotal - prixPartenaire;
+      prixPartenaire = (prixTotal * pourcentageCouverture) / 100;
+      prixPatient = prixTotal - prixPartenaire;
     } else {
-        prixPatient = prixTotal;
+      prixPatient = prixTotal;
     }
-
+  
     // Appliquer la réduction sur le prixPatient si applicable
     if (reduction && typeReduction) {
-        if (typeReduction === 'montant') {
-            prixPatient = Math.max(0, prixPatient - reduction);
-        } else if (typeReduction === 'pourcentage') {
-            prixPatient = Math.max(0, prixPatient - (prixPatient * reduction / 100));
-        }
+      if (typeReduction === 'montant') {
+        prixPatient = Math.max(0, prixPatient - reduction);
+      } else if (typeReduction === 'pourcentage') {
+        prixPatient = Math.max(0, prixPatient - (prixPatient * reduction / 100));
+      }
     }
-
+  
+    // Calcul du reliquat
+    const reliquat = prixPatient - avance;
+  
     // Création de l'analyse
     const nouvelleAnalyse = await Analyse.create({
-        userId,
-        tests,
-        identifiant,
-        partenaireId: partenaireId || undefined,
-        statusPayement,
-        avance,
-        prixTotal,
-        prixPartenaire,
-        prixPatient,
-        reduction,
-        pc1,
-        pc2,
-        deplacement,
-        pourcentageCouverture,
-        dateDeRecuperation,
-        ordonnancePdf: ordonnancePdfPath
+      userId,
+      tests,
+      identifiant,
+      partenaireId: partenaireId || undefined,
+      statusPayement,
+      avance,
+      prixTotal,
+      prixPartenaire,
+      prixPatient,
+      reduction,
+      pc1,
+      pc2,
+      deplacement,
+      pourcentageCouverture,
+      dateDeRecuperation,
+      ordonnancePdf: ordonnancePdfPath,
+      reliquat,
     });
-
+  
     // Création d'une étiquette partenaire si nécessaire
     if (partenaireId && prixPartenaire > 0) {
-        await EtiquettePartenaire.create({
-            analyseId: nouvelleAnalyse._id,
-            partenaireId,
-            sommeAPayer: prixPartenaire
-        });
+      await EtiquettePartenaire.create({
+        analyseId: nouvelleAnalyse._id,
+        partenaireId,
+        sommeAPayer: prixPartenaire,
+      });
     }
-
+  
     // Créer un nouvel historique avec le statut initial et l'associer à l'analyse créée
     const historique = await Historique.create({
-        analyseId: nouvelleAnalyse._id,
-        status: "Création",
-        description: "Création du processus",
-        updatedBy: userOwn // Supposant que l'utilisateur créant l'analyse est celui qui met à jour l'historique
+      analyseId: nouvelleAnalyse._id,
+      status: "Création",
+      description: "Création du processus",
+      updatedBy: userOwn, // Supposant que l'utilisateur créant l'analyse est celui qui met à jour l'historique
     });
-
+  
     // Assurez-vous d'ajouter l'historique créé à l'analyse
     nouvelleAnalyse.historiques.push(historique._id);
     await nouvelleAnalyse.save(); // Sauvegardez l'analyse avec la référence à l'historique
-
+  
     res.status(201).json({
-        success: true,
-        message: "Analyse créée avec succès",
-        data: nouvelleAnalyse
+      success: true,
+      message: "Analyse créée avec succès",
+      data: nouvelleAnalyse,
     });
-});
+  });
+  
 
 
 // Obtenir toutes les analyses
@@ -318,90 +426,220 @@ exports.getAnalyse = asyncHandler(async (req, res) => {
 });
 
 
-exports.updateAnalyse = asyncHandler(async (req, res) => {
-    const { userId, tests, partenaireId, statusPayement, avance, pourcentageCouverture, reduction, typeReduction, pc1, pc2, deplacement, dateDeRecuperation } = req.body;
-    let ordonnancePdfPath = req.file ? req.file.path : null;
+// exports.updateAnalyse = asyncHandler(async (req, res) => {
+//     const { userId, tests, partenaireId, statusPayement, avance, pourcentageCouverture, reduction, typeReduction, pc1, pc2, deplacement, dateDeRecuperation } = req.body;
+//     let ordonnancePdfPath = req.file ? req.file.path : null;
 
+//     let analyse = await Analyse.findById(req.params.id);
+//     if (!analyse) {
+//         return res.status(404).send('Analyse non trouvée');
+//     }
+
+//     let prixTotal = 0;
+//     let prixPartenaire = 0;
+//     let prixPatient = 0;
+//     let typePartenaire = analyse.partenaireId ? (await Partenaire.findById(analyse.partenaireId)).typePartenaire : null;
+
+//     if (partenaireId && mongoose.Types.ObjectId.isValid(partenaireId) && (!analyse.partenaireId || analyse.partenaireId.toString() !== partenaireId)) {
+//         const partenaire = await Partenaire.findById(partenaireId);
+//         if (!partenaire) {
+//             return res.status(404).send('Partenaire non trouvé');
+//         }
+//         analyse.partenaireId = partenaire._id;
+//         typePartenaire = partenaire.typePartenaire;
+//     }
+
+//     if (pourcentageCouverture !== undefined && analyse.pourcentageCouverture !== pourcentageCouverture) {
+//         analyse.pourcentageCouverture = pourcentageCouverture;
+//         if (analyse.pourcentageCouverture === 0) {
+//             analyse.partenaireId = undefined;
+//         }
+
+//     }
+
+
+//     const testsDetails = tests ? await Test.find({ '_id': { $in: tests } }) : analyse.tests;
+//     testsDetails.forEach(test => {
+//         if (typePartenaire === 'assurance') {
+//             prixTotal += test.coeficiantB * test.prixAssurance;
+//         } else if (typePartenaire === 'ipm') {
+//             prixTotal += test.coeficiantB * test.prixIpm;
+//         } else if (typePartenaire === 'sococim') {
+//             prixTotal += test.coeficiantB * test.prixSococim;
+
+//         } else if (typePartenaire === 'clinique') {
+//             prixTotal += test.coeficiantB * test.prixClinique;
+
+//         }
+//         else {
+//             prixTotal += test.coeficiantB * test.prixPaf;
+//         }
+//     });
+
+//     if (pourcentageCouverture > 0 && typePartenaire) {
+//         prixPartenaire = (prixTotal * pourcentageCouverture) / 100;
+//         prixPatient = prixTotal - prixPartenaire;
+//     } else {
+//         prixPatient = prixTotal;
+//         prixPartenaire = 0;
+//     }
+
+//     if (reduction && typeReduction) {
+//         if (typeReduction === 'montant') {
+//             prixPatient -= reduction;
+//         } else if (typeReduction === 'pourcentage') {
+//             prixPatient -= prixPatient * reduction / 100;
+//         }
+//         prixPatient = Math.max(0, prixPatient);
+//     }
+
+//     if (ordonnancePdfPath) {
+//         analyse.ordonnancePdf = ordonnancePdfPath;
+//     }
+//     if (statusPayement) {
+//         analyse.statusPayement = statusPayement
+//     }
+
+//     // Ajout de la logique pour mettre à jour pc1, pc2, et deplacement
+//     analyse.pc1 = Number(pc1);
+//     analyse.pc2 = Number(pc2);
+//     analyse.deplacement = Number(deplacement);
+//     // Convertir la chaîne de caractères en Date, si dateDeRecuperation est fournie
+//     if (dateDeRecuperation) {
+//         analyse.dateDeRecuperation = new Date(dateDeRecuperation);
+//     }
+
+
+//     analyse.tests = testsDetails.map(test => test._id); // Mise à jour des tests
+//     analyse.prixTotal = prixTotal;
+//     analyse.prixPartenaire = prixPartenaire;
+//     analyse.prixPatient = prixPatient;
+//     analyse.reduction = reduction;
+//     analyse.typeReduction = typeReduction;
+//     analyse.avance = avance;
+
+//     await analyse.save();
+
+   
+//     let etiquettePartenaire = await EtiquettePartenaire.findOne({ analyseId: analyse._id });
+//     if (etiquettePartenaire) {
+//         if (partenaireId && prixPartenaire > 0) {
+//             // Mise à jour de l'étiquette existante même si le partenaire change
+//             etiquettePartenaire.partenaireId = partenaireId;
+//             etiquettePartenaire.sommeAPayer = prixPartenaire;
+//             await etiquettePartenaire.save();
+//         } else {
+//             // Suppression de l'étiquette si l'analyse n'a plus de partenaire
+//             await EtiquettePartenaire.findByIdAndDelete(etiquettePartenaire._id);
+//         }
+//     } else if (partenaireId && prixPartenaire > 0) {
+//         // Création d'une nouvelle étiquette si elle n'existe pas et qu'un partenaire est défini
+//         await EtiquettePartenaire.create({
+//             analyseId: analyse._id,
+//             partenaireId,
+//             sommeAPayer: prixPartenaire
+//         });
+//     }
+
+//     const historique = await Historique.create({
+//         analyseId: analyse._id,
+//         status: "Modification",
+//         description: "Les informations de l'analyse ont été modifiées.",
+//         updatedBy: userId
+//     });
+
+//     analyse.historiques.push(historique._id);
+//     await analyse.save();
+
+//     res.status(200).json({
+//         success: true,
+//         data: analyse
+//     });
+// });
+
+exports.updateAnalyse = asyncHandler(async (req, res) => {
+    const { userId, tests, partenaireId, statusPayement, avance = 0, pourcentageCouverture = 0, reduction = 0, typeReduction, pc1 = 0, pc2 = 0, deplacement = 0, dateDeRecuperation } = req.body;
+    let ordonnancePdfPath = req.file ? req.file.path : null;
+  
     let analyse = await Analyse.findById(req.params.id);
     if (!analyse) {
-        return res.status(404).send('Analyse non trouvée');
+      return res.status(404).send('Analyse non trouvée');
     }
-
+  
     let prixTotal = 0;
     let prixPartenaire = 0;
     let prixPatient = 0;
     let typePartenaire = analyse.partenaireId ? (await Partenaire.findById(analyse.partenaireId)).typePartenaire : null;
-
+  
     if (partenaireId && mongoose.Types.ObjectId.isValid(partenaireId) && (!analyse.partenaireId || analyse.partenaireId.toString() !== partenaireId)) {
-        const partenaire = await Partenaire.findById(partenaireId);
-        if (!partenaire) {
-            return res.status(404).send('Partenaire non trouvé');
-        }
-        analyse.partenaireId = partenaire._id;
-        typePartenaire = partenaire.typePartenaire;
+      const partenaire = await Partenaire.findById(partenaireId);
+      if (!partenaire) {
+        return res.status(404).send('Partenaire non trouvé');
+      }
+      analyse.partenaireId = partenaire._id;
+      typePartenaire = partenaire.typePartenaire;
     }
-
+  
     if (pourcentageCouverture !== undefined && analyse.pourcentageCouverture !== pourcentageCouverture) {
-        analyse.pourcentageCouverture = pourcentageCouverture;
-        if (analyse.pourcentageCouverture === 0) {
-            analyse.partenaireId = undefined;
-        }
-
+      analyse.pourcentageCouverture = pourcentageCouverture;
+      if (analyse.pourcentageCouverture === 0) {
+        analyse.partenaireId = undefined;
+      }
     }
-
-
+  
     const testsDetails = tests ? await Test.find({ '_id': { $in: tests } }) : analyse.tests;
     testsDetails.forEach(test => {
-        if (typePartenaire === 'assurance') {
-            prixTotal += test.coeficiantB * test.prixAssurance;
-        } else if (typePartenaire === 'ipm') {
-            prixTotal += test.coeficiantB * test.prixIpm;
-        } else if (typePartenaire === 'sococim') {
-            prixTotal += test.coeficiantB * test.prixSococim;
-
-        } else if (typePartenaire === 'clinique') {
-            prixTotal += test.coeficiantB * test.prixClinique;
-
-        }
-        else {
-            prixTotal += test.coeficiantB * test.prixPaf;
-        }
+      if (typePartenaire === 'assurance') {
+        prixTotal += test.coeficiantB * test.prixAssurance;
+      } else if (typePartenaire === 'ipm') {
+        prixTotal += test.coeficiantB * test.prixIpm;
+      } else if (typePartenaire === 'sococim') {
+        prixTotal += test.coeficiantB * test.prixSococim;
+      } else if (typePartenaire === 'clinique') {
+        prixTotal += test.coeficiantB * test.prixClinique;
+      } else {
+        prixTotal += test.coeficiantB * test.prixPaf;
+      }
     });
-
+  
+    // Ajouter pc1, pc2 et deplacement au prix total
+    prixTotal += Number(pc1) + Number(pc2) + Number(deplacement);
+  
     if (pourcentageCouverture > 0 && typePartenaire) {
-        prixPartenaire = (prixTotal * pourcentageCouverture) / 100;
-        prixPatient = prixTotal - prixPartenaire;
+      prixPartenaire = (prixTotal * pourcentageCouverture) / 100;
+      prixPatient = prixTotal - prixPartenaire;
     } else {
-        prixPatient = prixTotal;
-        prixPartenaire = 0;
+      prixPatient = prixTotal;
+      prixPartenaire = 0;
     }
-
+  
     if (reduction && typeReduction) {
-        if (typeReduction === 'montant') {
-            prixPatient -= reduction;
-        } else if (typeReduction === 'pourcentage') {
-            prixPatient -= prixPatient * reduction / 100;
-        }
-        prixPatient = Math.max(0, prixPatient);
+      if (typeReduction === 'montant') {
+        prixPatient = Math.max(0, prixPatient - reduction);
+      } else if (typeReduction === 'pourcentage') {
+        prixPatient = Math.max(0, prixPatient - (prixPatient * reduction / 100));
+      }
     }
-
+  
     if (ordonnancePdfPath) {
-        analyse.ordonnancePdf = ordonnancePdfPath;
+      analyse.ordonnancePdf = ordonnancePdfPath;
     }
     if (statusPayement) {
-        analyse.statusPayement = statusPayement
+      analyse.statusPayement = statusPayement;
     }
-
+  
     // Ajout de la logique pour mettre à jour pc1, pc2, et deplacement
     analyse.pc1 = Number(pc1);
     analyse.pc2 = Number(pc2);
     analyse.deplacement = Number(deplacement);
     // Convertir la chaîne de caractères en Date, si dateDeRecuperation est fournie
     if (dateDeRecuperation) {
-        analyse.dateDeRecuperation = new Date(dateDeRecuperation);
+      analyse.dateDeRecuperation = new Date(dateDeRecuperation);
     }
-
-
+  
+    // Calcul du reliquat
+    const reliquat = prixPatient - avance;
+  
     analyse.tests = testsDetails.map(test => test._id); // Mise à jour des tests
     analyse.prixTotal = prixTotal;
     analyse.prixPartenaire = prixPartenaire;
@@ -409,45 +647,46 @@ exports.updateAnalyse = asyncHandler(async (req, res) => {
     analyse.reduction = reduction;
     analyse.typeReduction = typeReduction;
     analyse.avance = avance;
-
+    analyse.reliquat = reliquat;
+  
     await analyse.save();
-
-   
+  
     let etiquettePartenaire = await EtiquettePartenaire.findOne({ analyseId: analyse._id });
     if (etiquettePartenaire) {
-        if (partenaireId && prixPartenaire > 0) {
-            // Mise à jour de l'étiquette existante même si le partenaire change
-            etiquettePartenaire.partenaireId = partenaireId;
-            etiquettePartenaire.sommeAPayer = prixPartenaire;
-            await etiquettePartenaire.save();
-        } else {
-            // Suppression de l'étiquette si l'analyse n'a plus de partenaire
-            await EtiquettePartenaire.findByIdAndDelete(etiquettePartenaire._id);
-        }
+      if (partenaireId && prixPartenaire > 0) {
+        // Mise à jour de l'étiquette existante même si le partenaire change
+        etiquettePartenaire.partenaireId = partenaireId;
+        etiquettePartenaire.sommeAPayer = prixPartenaire;
+        await etiquettePartenaire.save();
+      } else {
+        // Suppression de l'étiquette si l'analyse n'a plus de partenaire
+        await EtiquettePartenaire.findByIdAndDelete(etiquettePartenaire._id);
+      }
     } else if (partenaireId && prixPartenaire > 0) {
-        // Création d'une nouvelle étiquette si elle n'existe pas et qu'un partenaire est défini
-        await EtiquettePartenaire.create({
-            analyseId: analyse._id,
-            partenaireId,
-            sommeAPayer: prixPartenaire
-        });
-    }
-
-    const historique = await Historique.create({
+      // Création d'une nouvelle étiquette si elle n'existe pas et qu'un partenaire est défini
+      await EtiquettePartenaire.create({
         analyseId: analyse._id,
-        status: "Modification",
-        description: "Les informations de l'analyse ont été modifiées.",
-        updatedBy: userId
+        partenaireId,
+        sommeAPayer: prixPartenaire,
+      });
+    }
+  
+    const historique = await Historique.create({
+      analyseId: analyse._id,
+      status: "Modification",
+      description: "Les informations de l'analyse ont été modifiées.",
+      updatedBy: userId,
     });
-
+  
     analyse.historiques.push(historique._id);
     await analyse.save();
-
+  
     res.status(200).json({
-        success: true,
-        data: analyse
+      success: true,
+      data: analyse,
     });
-});
+  });
+  
 
 
 
