@@ -28,11 +28,11 @@ exports.signup = asyncHandler(async (req, res) => {
   const { nom, prenom, email, dateNaissance, password, adresse, telephone, userType,partenaireId, age } = req.body;
 
   // Vérifier si l'utilisateur existe déjà
-  const userExists = await User.findOne({ telephone });
-  if (userExists) {
-    res.status(400);
-    throw new Error('Un utilisateur existe déjà avec cet telephone');
-  }
+  // const userExists = await User.findOne({ telephone });
+  // if (userExists) {
+  //   res.status(400);
+  //   throw new Error('Un utilisateur existe déjà avec cet telephone');
+  // }
   const nip = await getNextId('patientId'); // Générer l'identifiant
   // Créer un nouvel utilisateur
   const user = await User.create({
