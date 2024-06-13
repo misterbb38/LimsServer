@@ -209,6 +209,10 @@ const resultatSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
+    statutMachine: {
+        type: Boolean,
+        default: false
+    },
     typePrelevement: {
         type: String,
         default: ''
