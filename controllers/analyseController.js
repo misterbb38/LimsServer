@@ -5,40 +5,150 @@ const Historique = require('../models/historiqueModel'); // Assurez-vous que le 
 const Test = require('../models/testModel'); // Chemin à ajuster selon votre structure
 const Partenaire = require('../models/PartenaireModel'); // Chemin à ajuster selon votre structure
 const EtiquettePartenaire = require('../models/etiquettePartenaireModel'); // Chemin à ajuster selon votre structure
+const { getNextId } = require('../middleware/idGenerator');
 
 
 
-const Counter = require('../models/Counter');
+
+// Fonction pour obtenir le prochain identifiant console.log (premier logique)
+// async function getNextId() {
+//     const counter = await Counter.findByIdAndUpdate('analyseId', { $inc: { seq: 1 } }, { new: true, upsert: true });
+//     return counter.seq.toString(36).padStart(5, '0').toUpperCase();
+// }
 
 
-// Fonction pour obtenir le prochain identifiant console.log
-async function getNextId() {
-    const counter = await Counter.findByIdAndUpdate('analyseId', { $inc: { seq: 1 } }, { new: true, upsert: true });
-    return counter.seq.toString(36).padStart(5, '0').toUpperCase();
-}
 
 
+
+
+// exports.createAnalyse = asyncHandler(async (req, res) => {
+//     const { userId, userOwn, tests, partenaireId, statusPayement, avance = 0, pourcentageCouverture = 0, reduction = 0, typeReduction, pc1 = 0, pc2 = 0, deplacement = 0, dateDeRecuperation } = req.body;
+  
+//     let ordonnancePdfPath = req.file ? req.file.path : null;
+//     let prixTotal = 0;
+//     let prixPartenaire = 0;
+//     let prixPatient = 0;
+  
+//     const identifiant = await getNextId(); // Générer l'identifiant
+  
+//     // Récupérer les détails des tests
+//     const testsDetails = await Test.find({ '_id': { $in: tests } });
+  
+//     // Vérifier si un partenaire est choisi
+//     let typePartenaire = null;
+//     if (partenaireId) {
+//       const partenaire = await Partenaire.findById(partenaireId);
+//       typePartenaire = partenaire.typePartenaire;
+//     }
+  
+//     // Calcul du prix total en fonction du type de partenaire
+//     testsDetails.forEach(test => {
+//       if (typePartenaire === 'assurance') {
+//         prixTotal += test.coeficiantB * test.prixAssurance;
+//       } else if (typePartenaire === 'ipm') {
+//         prixTotal += test.coeficiantB * test.prixIpm;
+//       } else if (typePartenaire === 'sococim') {
+//         prixTotal += test.coeficiantB * test.prixSococim;
+//       } else if (typePartenaire === 'clinique') {
+//         prixTotal += test.coeficiantB * test.prixClinique;
+//       } else {
+//         prixTotal += test.coeficiantB * test.prixPaf;
+//       }
+//     });
+  
+//     // Ajouter pc1, pc2 et deplacement au prix total
+//     prixTotal += Number(pc1) + Number(pc2) + Number(deplacement);
+  
+//     // Calcul du prix partenaire et du prix patient
+//     if (typePartenaire) {
+//       prixPartenaire = (prixTotal * pourcentageCouverture) / 100;
+//       prixPatient = prixTotal - prixPartenaire;
+//     } else {
+//       prixPatient = prixTotal;
+//     }
+  
+//     // Appliquer la réduction sur le prixPatient si applicable
+//     if (reduction && typeReduction) {
+//       if (typeReduction === 'montant') {
+//         prixPatient = Math.max(0, prixPatient - reduction);
+//       } else if (typeReduction === 'pourcentage') {
+//         prixPatient = Math.max(0, prixPatient - (prixPatient * reduction / 100));
+//       }
+//     }
+  
+//     // Calcul du reliquat
+//     const reliquat = prixPatient - avance;
+  
+//     // Création de l'analyse
+//     const nouvelleAnalyse = await Analyse.create({
+//       userId,
+//       tests,
+//       identifiant,
+//       partenaireId: partenaireId || undefined,
+//       statusPayement,
+//       avance,
+//       prixTotal,
+//       prixPartenaire,
+//       prixPatient,
+//       reduction,
+//       pc1,
+//       pc2,
+//       deplacement,
+//       pourcentageCouverture,
+//       dateDeRecuperation,
+//       ordonnancePdf: ordonnancePdfPath,
+//       reliquat,
+//     });
+  
+//     // Création d'une étiquette partenaire si nécessaire
+//     if (partenaireId && prixPartenaire > 0) {
+//       await EtiquettePartenaire.create({
+//         analyseId: nouvelleAnalyse._id,
+//         partenaireId,
+//         sommeAPayer: prixPartenaire,
+//       });
+//     }
+  
+//     // Créer un nouvel historique avec le statut initial et l'associer à l'analyse créée
+//     const historique = await Historique.create({
+//       analyseId: nouvelleAnalyse._id,
+//       status: "Création",
+//       description: "Création du processus",
+//       updatedBy: userOwn, // Supposant que l'utilisateur créant l'analyse est celui qui met à jour l'historique
+//     });
+  
+//     // Assurez-vous d'ajouter l'historique créé à l'analyse
+//     nouvelleAnalyse.historiques.push(historique._id);
+//     await nouvelleAnalyse.save(); // Sauvegardez l'analyse avec la référence à l'historique
+  
+//     res.status(201).json({
+//       success: true,
+//       message: "Analyse créée avec succès",
+//       data: nouvelleAnalyse,
+//     });
+//   });
+  
 
 exports.createAnalyse = asyncHandler(async (req, res) => {
     const { userId, userOwn, tests, partenaireId, statusPayement, avance = 0, pourcentageCouverture = 0, reduction = 0, typeReduction, pc1 = 0, pc2 = 0, deplacement = 0, dateDeRecuperation } = req.body;
-  
+
     let ordonnancePdfPath = req.file ? req.file.path : null;
     let prixTotal = 0;
     let prixPartenaire = 0;
     let prixPatient = 0;
-  
-    const identifiant = await getNextId(); // Générer l'identifiant
-  
+
+    const identifiant = await getNextId('analyseId'); // Générer l'identifiant
+
     // Récupérer les détails des tests
     const testsDetails = await Test.find({ '_id': { $in: tests } });
-  
+
     // Vérifier si un partenaire est choisi
     let typePartenaire = null;
     if (partenaireId) {
       const partenaire = await Partenaire.findById(partenaireId);
       typePartenaire = partenaire.typePartenaire;
     }
-  
+
     // Calcul du prix total en fonction du type de partenaire
     testsDetails.forEach(test => {
       if (typePartenaire === 'assurance') {
@@ -53,10 +163,10 @@ exports.createAnalyse = asyncHandler(async (req, res) => {
         prixTotal += test.coeficiantB * test.prixPaf;
       }
     });
-  
+
     // Ajouter pc1, pc2 et deplacement au prix total
     prixTotal += Number(pc1) + Number(pc2) + Number(deplacement);
-  
+
     // Calcul du prix partenaire et du prix patient
     if (typePartenaire) {
       prixPartenaire = (prixTotal * pourcentageCouverture) / 100;
@@ -64,7 +174,7 @@ exports.createAnalyse = asyncHandler(async (req, res) => {
     } else {
       prixPatient = prixTotal;
     }
-  
+
     // Appliquer la réduction sur le prixPatient si applicable
     if (reduction && typeReduction) {
       if (typeReduction === 'montant') {
@@ -73,10 +183,10 @@ exports.createAnalyse = asyncHandler(async (req, res) => {
         prixPatient = Math.max(0, prixPatient - (prixPatient * reduction / 100));
       }
     }
-  
+
     // Calcul du reliquat
     const reliquat = prixPatient - avance;
-  
+
     // Création de l'analyse
     const nouvelleAnalyse = await Analyse.create({
       userId,
@@ -97,7 +207,7 @@ exports.createAnalyse = asyncHandler(async (req, res) => {
       ordonnancePdf: ordonnancePdfPath,
       reliquat,
     });
-  
+
     // Création d'une étiquette partenaire si nécessaire
     if (partenaireId && prixPartenaire > 0) {
       await EtiquettePartenaire.create({
@@ -106,7 +216,7 @@ exports.createAnalyse = asyncHandler(async (req, res) => {
         sommeAPayer: prixPartenaire,
       });
     }
-  
+
     // Créer un nouvel historique avec le statut initial et l'associer à l'analyse créée
     const historique = await Historique.create({
       analyseId: nouvelleAnalyse._id,
@@ -114,19 +224,17 @@ exports.createAnalyse = asyncHandler(async (req, res) => {
       description: "Création du processus",
       updatedBy: userOwn, // Supposant que l'utilisateur créant l'analyse est celui qui met à jour l'historique
     });
-  
+
     // Assurez-vous d'ajouter l'historique créé à l'analyse
     nouvelleAnalyse.historiques.push(historique._id);
     await nouvelleAnalyse.save(); // Sauvegardez l'analyse avec la référence à l'historique
-  
+
     res.status(201).json({
       success: true,
       message: "Analyse créée avec succès",
       data: nouvelleAnalyse,
     });
-  });
-  
-
+});
 
 // Obtenir toutes les analyses
 

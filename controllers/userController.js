@@ -3,16 +3,18 @@ const bcrypt = require('bcryptjs');
 const asyncHandler = require('../middleware/async.js');
 const User = require('../models/userModel'); // Ajustez le chemin selon votre structure
 const Notification = require('../models/notificationModel.js')
+const { getNextNip } = require('../middleware/idGenerator');
+
+// const Counter = require('../models/Counter');
 
 
-const Counter = require('../models/Counter');
+// Fonction pour obtenir le prochain identifiant séquentiel(logique 1)
+// async function getNextId(typeId) {
+//   const counter = await Counter.findByIdAndUpdate(typeId, { $inc: { seq: 1 } }, { new: true, upsert: true });
+//   return counter.seq.toString(36).padStart(5, '0').toUpperCase();
+// }
 
 
-// Fonction pour obtenir le prochain identifiant séquentiel
-async function getNextId(typeId) {
-  const counter = await Counter.findByIdAndUpdate(typeId, { $inc: { seq: 1 } }, { new: true, upsert: true });
-  return counter.seq.toString(36).padStart(5, '0').toUpperCase();
-}
 
 // Middleware pour générer un token JWT
 
@@ -24,16 +26,64 @@ const generateToken = (id) => {
 };
 
 // Inscription d'un nouvel utilisateur
+// exports.signup = asyncHandler(async (req, res) => {
+//   const { nom, prenom, email, dateNaissance, password, adresse, telephone, userType,partenaireId, age } = req.body;
+
+//   // Vérifier si l'utilisateur existe déjà
+//   // const userExists = await User.findOne({ telephone });
+//   // if (userExists) {
+//   //   res.status(400);
+//   //   throw new Error('Un utilisateur existe déjà avec cet telephone');
+//   // }
+//   const nip = await getNextId('patientId'); // Générer l'identifiant
+//   // Créer un nouvel utilisateur
+//   const user = await User.create({
+//     nom,
+//     prenom,
+//     email,
+//     dateNaissance,
+//     password, // Sera hashé automatiquement par le hook pre 'save'
+//     adresse,
+//     telephone,
+//     age,
+//     nip,
+//     userType,
+//     partenaireId,
+
+//   });
+
+//   if (user) {
+//     res.status(201).json({
+//       _id: user._id,
+//       nom: user.nom,
+//       prenom: user.prenom,
+//       email: user.email,
+//       adresse: user.adresse,
+//       telephone: user.telephone,
+//       adresse: user.adresse,
+//       userType: user.userType,
+//       partenaireId: user.partenaireId, // Inclure le partenaireId dans la réponse
+//       token: generateToken(user._id), // Envoi du token JWT pour authentification immédiate
+//     });
+//   } else {
+//     res.status(400);
+//     throw new Error('Données d\'utilisateur invalides');
+//   }
+// });
+
+// Inscription d'un nouvel utilisateur
 exports.signup = asyncHandler(async (req, res) => {
-  const { nom, prenom, email, dateNaissance, password, adresse, telephone, userType,partenaireId, age } = req.body;
+  const { nom, prenom, email, dateNaissance, password, adresse, telephone, userType, partenaireId, age } = req.body;
 
   // Vérifier si l'utilisateur existe déjà
-  // const userExists = await User.findOne({ telephone });
-  // if (userExists) {
-  //   res.status(400);
-  //   throw new Error('Un utilisateur existe déjà avec cet telephone');
-  // }
-  const nip = await getNextId('patientId'); // Générer l'identifiant
+  const userExists = await User.findOne({ telephone });
+  if (userExists) {
+    res.status(400);
+    throw new Error('Un utilisateur existe déjà avec ce téléphone');
+  }
+
+  const nip = await getNextNip(); // Générer le NIP
+
   // Créer un nouvel utilisateur
   const user = await User.create({
     nom,
@@ -47,7 +97,6 @@ exports.signup = asyncHandler(async (req, res) => {
     nip,
     userType,
     partenaireId,
-
   });
 
   if (user) {
@@ -58,7 +107,6 @@ exports.signup = asyncHandler(async (req, res) => {
       email: user.email,
       adresse: user.adresse,
       telephone: user.telephone,
-      adresse: user.adresse,
       userType: user.userType,
       partenaireId: user.partenaireId, // Inclure le partenaireId dans la réponse
       token: generateToken(user._id), // Envoi du token JWT pour authentification immédiate
