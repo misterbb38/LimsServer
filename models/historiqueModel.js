@@ -8,7 +8,7 @@ const HistoriqueSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ["Modification", "Création", "En attente", "Approuvé", "Échantillon collecté", "salle de prelevement", "Livré au laboratoire", "Validé", "Annulé", " "],
+        enum: ["Modification", "Création", "En attente", "Approuvé", "Échantillon collecté","Validation technique","Information", "Salle de prelevement", "Livré au laboratoire", "Validé", "Annulé"],
         required: true
     },
     description: {

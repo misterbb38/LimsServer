@@ -564,7 +564,7 @@ exports.getAnalyse = asyncHandler(async (req, res) => {
 // });
 
 exports.updateAnalyse = asyncHandler(async (req, res) => {
-    const { userId, tests, partenaireId, statusPayement, avance = 0, pourcentageCouverture = 0, reduction = 0, typeReduction, pc1 = 0, pc2 = 0, deplacement = 0, dateDeRecuperation } = req.body;
+    const { userOwn , tests, partenaireId, statusPayement, avance = 0, pourcentageCouverture = 0, reduction = 0, typeReduction, pc1 = 0, pc2 = 0, deplacement = 0, dateDeRecuperation } = req.body;
     let ordonnancePdfPath = req.file ? req.file.path : null;
   
     let analyse = await Analyse.findById(req.params.id);
@@ -681,7 +681,7 @@ exports.updateAnalyse = asyncHandler(async (req, res) => {
       analyseId: analyse._id,
       status: "Modification",
       description: "Les informations de l'analyse ont été modifiées.",
-      updatedBy: userId,
+      updatedBy:userOwn,
     });
   
     analyse.historiques.push(historique._id);

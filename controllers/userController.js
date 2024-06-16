@@ -73,7 +73,7 @@ const generateToken = (id) => {
 
 // Inscription d'un nouvel utilisateur
 exports.signup = asyncHandler(async (req, res) => {
-  const { nom, prenom, email, dateNaissance, password, adresse, telephone, userType, partenaireId, age } = req.body;
+  const { nom, prenom, email, dateNaissance, password, adresse, telephone, userType, partenaireId, age, sexe } = req.body;
 
   // Vérifier si l'utilisateur existe déjà
   const userExists = await User.findOne({ telephone });
@@ -94,6 +94,7 @@ exports.signup = asyncHandler(async (req, res) => {
     adresse,
     telephone,
     age,
+    sexe,
     nip,
     userType,
     partenaireId,
@@ -107,6 +108,7 @@ exports.signup = asyncHandler(async (req, res) => {
       email: user.email,
       adresse: user.adresse,
       telephone: user.telephone,
+      sexe: sexe.telephone,
       userType: user.userType,
       partenaireId: user.partenaireId, // Inclure le partenaireId dans la réponse
       token: generateToken(user._id), // Envoi du token JWT pour authentification immédiate
