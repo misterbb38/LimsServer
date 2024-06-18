@@ -52,7 +52,7 @@ const testSchema = new mongoose.Schema({
         required: [true, 'Le statut du test est obligatoire'],
         default: true // Par défaut, les tests sont activés
     },
-    // c est le methode du paramettre(une changement )
+    // c est le matiere du paramettre(une changement )
     categories: {
         type: String,
         required: false

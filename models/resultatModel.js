@@ -217,6 +217,14 @@ const resultatSchema = new mongoose.Schema({
         type: String,
         default: ''
     },
+    matiere: {
+        type: String,
+        default: ''
+    },
+    qualitatif: {
+        type: String,
+        default: ''
+    },
     lieuPrelevement: {
         type: String,
         default: ''

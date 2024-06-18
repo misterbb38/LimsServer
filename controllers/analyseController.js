@@ -241,7 +241,7 @@ exports.createAnalyse = asyncHandler(async (req, res) => {
 exports.getAnalyses = asyncHandler(async (req, res) => {
     const analyses = await Analyse.find()
         .populate('userId', 'nom prenom email adresse  telephone dateNaissance age nip createdAt updatedAt sexe') // Inclure createdAt et updatedAt
-        .populate('tests', 'nom description machineA machineB valeurMachineA valeurMachineB interpretationA interpretationB prixAssurance prixPaf prixSococim  prixClinique prixIpm coeficiantB  montantRecus') // Inclure createdAt et updatedAt
+        .populate('tests', 'nom description categories machineA machineB valeurMachineA valeurMachineB interpretationA interpretationB prixAssurance prixPaf prixSococim  prixClinique prixIpm coeficiantB  montantRecus') // Inclure createdAt et updatedAt
         .populate('partenaireId', 'nom typePartenaire')
         .populate({
             path: 'historiques',
@@ -255,7 +255,7 @@ exports.getAnalyses = asyncHandler(async (req, res) => {
 
         .populate({
             path: 'resultat', // Modifier ici pour correspondre au champ de votre schéma Analyse qui contient les ID des résultats
-            select: 'valeur interpretationA interpretationB methode dernierResultatAnterieur testId statutInterpretation typePrelevement lieuPrelevement statutMachine datePrelevement updatedBy createdAt updatedAt observations culture gram conclusion remarque',
+            select: 'valeur remarque qualitatif interpretationA interpretationB methode dernierResultatAnterieur testId statutInterpretation typePrelevement lieuPrelevement statutMachine datePrelevement updatedBy createdAt updatedAt observations culture gram conclusion remarque',
             populate: [
                 {
                     path: 'testId',
@@ -292,7 +292,7 @@ exports.getAnalysesPatient = asyncHandler(async (req, res) => {
     const analyses = await Analyse.find({ userId: userId }) // Assurez-vous que ce champ correspond à votre modèle de base de données
         .populate('userId', 'nom prenom email adresse telephone dateNaissance age nip createdAt updatedAt')
         .populate('userId', 'nom prenom email adresse  telephone dateNaissance age nip createdAt updatedAt sexe') // Inclure createdAt et updatedAt
-        .populate('tests', 'nom description machineA machineB valeurMachineA valeurMachineB interpretationA interpretationB prixAssurance prixPaf prixIpm prixSococim  prixClinique coeficiantB  montantRecus') // Inclure createdAt et updatedAt
+        .populate('tests', 'nom description categories machineA machineB valeurMachineA valeurMachineB interpretationA interpretationB prixAssurance prixPaf prixIpm prixSococim  prixClinique coeficiantB  montantRecus') // Inclure createdAt et updatedAt
         .populate('partenaireId', 'nom typePartenaire')
         .populate({
             path: 'historiques',
@@ -306,7 +306,7 @@ exports.getAnalysesPatient = asyncHandler(async (req, res) => {
 
         .populate({
             path: 'resultat', // Modifier ici pour correspondre au champ de votre schéma Analyse qui contient les ID des résultats
-            select: 'valeur remarque interpretationA interpretationB methode dernierResultatAnterieur testId statutInterpretation typePrelevement lieuPrelevement statutMachine datePrelevement updatedBy createdAt updatedAt observations culture gram conclusion',
+            select: 'valeur remarque qualitatif interpretationA interpretationB methode dernierResultatAnterieur testId statutInterpretation typePrelevement lieuPrelevement statutMachine datePrelevement updatedBy createdAt updatedAt observations culture gram conclusion',
             populate: [
                 {
                     path: 'testId',
@@ -355,7 +355,7 @@ exports.getAnalysesClinique = asyncHandler(async (req, res) => {
 
     const analyses = await Analyse.find({ partenaireId: partenaireId })
         .populate('userId', 'nom prenom email adresse telephone dateNaissance age nip createdAt updatedAt sexe')
-        .populate('tests', 'nom description machineA machineB valeurMachineA valeurMachineB interpretationA interpretationB prixAssurance prixPaf prixIpm prixSococim  prixClinique coeficiantB montantRecus')
+        .populate('tests', 'nom description categories machineA machineB valeurMachineA valeurMachineB interpretationA interpretationB prixAssurance prixPaf prixIpm prixSococim  prixClinique coeficiantB montantRecus')
         .populate('partenaireId', 'nom typePartenaire')
         .populate({
             path: 'historiques',
@@ -367,7 +367,7 @@ exports.getAnalysesClinique = asyncHandler(async (req, res) => {
         })
         .populate({
             path: 'resultat',
-            select: 'valeur remarque interpretationA interpretationB methode dernierResultatAnterieur testId statutInterpretation typePrelevement lieuPrelevement statutMachine datePrelevement updatedBy createdAt updatedAt observations culture gram conclusion',
+            select: 'valeur remarque qualitatif interpretationA interpretationB methode dernierResultatAnterieur testId statutInterpretation typePrelevement lieuPrelevement statutMachine datePrelevement updatedBy createdAt updatedAt observations culture gram conclusion',
             populate: [
                 {
                     path: 'testId',
@@ -392,7 +392,7 @@ exports.getAnalysesClinique = asyncHandler(async (req, res) => {
 exports.getAnalyse = asyncHandler(async (req, res) => {
     const analyse = await Analyse.findById(req.params.id)
         .populate('userId', 'nom prenom email  adresse dateNaissance age nip telephone createdAt updatedAt sexe ')
-        .populate('tests', 'nom description machineA machineB machineA machineB valeurMachineA valeurMachineB interpretationA interpretationB prixSococime prixAssurance prixPaf prixIpm prixClinique coeficiantB  montantRecus')
+        .populate('tests', 'nom description categories machineA machineB machineA machineB valeurMachineA valeurMachineB interpretationA interpretationB prixSococime prixAssurance prixPaf prixIpm prixClinique coeficiantB  montantRecus categorie')
         .populate('partenaireId', 'nom typePartenaire')
         .populate({
             path: 'historiques',
@@ -406,7 +406,7 @@ exports.getAnalyse = asyncHandler(async (req, res) => {
 
         .populate({
             path: 'resultat', // Modifier ici pour correspondre au champ de votre schéma Analyse qui contient les ID des résultats
-            select: 'valeur remarque interpretation dernierResultatAnterieur methode testId statutInterpretation interpretationA interpretationB typePrelevement lieuPrelevement statutMachine datePrelevement updatedBy createdAt updatedAt observations culture gram conclusion',
+            select: 'valeur remarque qualitatif interpretation dernierResultatAnterieur methode testId statutInterpretation interpretationA interpretationB typePrelevement lieuPrelevement statutMachine datePrelevement updatedBy createdAt updatedAt observations culture gram conclusion',
             populate: [
                 {
                     path: 'testId',
