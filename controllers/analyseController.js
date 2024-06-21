@@ -158,7 +158,7 @@ exports.createAnalyse = asyncHandler(async (req, res) => {
       } else if (typePartenaire === 'sococim') {
         prixTotal += test.coeficiantB * test.prixSococim;
       } else if (typePartenaire === 'clinique') {
-        prixTotal += test.coeficiantB * test.prixClinique;
+        prixTotal += test.prixClinique;
       } else {
         prixTotal += test.coeficiantB * test.prixPaf;
       }
