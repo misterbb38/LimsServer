@@ -15,7 +15,7 @@ async function getNextId(type) {
         { new: true, upsert: true }
     );
 
-    const seqStr = counter.seq.toString().padStart(4, '0'); // Numéro séquentiel avec remplissage de 0 pour obtenir 4 chiffres
+    const seqStr = counter.seq.toString().padStart(3, '0'); // Numéro séquentiel avec remplissage de 0 pour obtenir 4 chiffres
     return dateStr + seqStr; // Retourne l'identifiant complet: YYMMDD + séquence
 }
 
