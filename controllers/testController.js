@@ -14,6 +14,35 @@ const readExcelFile = require('read-excel-file/node');
  * @access  Public
  */
 
+// exports.getTests = asyncHandler(async (req, res) => {
+//     const page = parseInt(req.query.page, 10) || 1;
+//     const limit = 25;
+//     const skip = (page - 1) * limit;
+//     const { search } = req.query;  // Récupération du paramètre de recherche depuis la requête
+
+//     // Construction du filtre de recherche
+//     let query = {};
+//     if (search) {
+//         query.nom = { $regex: new RegExp(search, 'i') };  // Recherche insensible à la casse sur le champ 'nom'
+//     }
+
+//     // Récupération des tests avec pagination et filtre de recherche
+//     const tests = await Test.find(query).skip(skip).limit(limit);
+
+//     // Récupération du nombre total de tests correspondant au filtre pour le calcul des pages
+//     const count = await Test.countDocuments(query);
+
+//     // Réponse avec la liste des tests paginée et filtrée
+//     res.status(200).json({
+//         success: true,
+//         count: tests.length,
+//         total: count,
+//         totalPages: Math.ceil(count / limit),
+//         data: tests,
+//         message: 'success'
+//     });
+// });
+
 exports.getTests = asyncHandler(async (req, res) => {
     const page = parseInt(req.query.page, 10) || 1;
     const limit = 25;
@@ -26,8 +55,11 @@ exports.getTests = asyncHandler(async (req, res) => {
         query.nom = { $regex: new RegExp(search, 'i') };  // Recherche insensible à la casse sur le champ 'nom'
     }
 
-    // Récupération des tests avec pagination et filtre de recherche
-    const tests = await Test.find(query).skip(skip).limit(limit);
+    // Récupération des tests avec pagination, filtre de recherche et tri
+    const tests = await Test.find(query)
+                            .sort({ nom: 1 })  // Tri par nom dans l'ordre alphabétique
+                            .skip(skip)
+                            .limit(limit);
 
     // Récupération du nombre total de tests correspondant au filtre pour le calcul des pages
     const count = await Test.countDocuments(query);
@@ -42,6 +74,7 @@ exports.getTests = asyncHandler(async (req, res) => {
         message: 'success'
     });
 });
+
 
 exports.getTestsAnalyse = asyncHandler(async (req, res) => {
     const page = parseInt(req.query.page, 10) || 1;
