@@ -5,13 +5,15 @@ const {
     getEtiquettePartenaireById,
     updateEtiquettePartenaire,
     deleteEtiquettePartenaire,
-    getEtiquettesStats
+    getEtiquettesStats,
+    getEtiquettesByPartenaire
 } = require('../controllers/etiquettePartenaireController');
 
 const router = express.Router();
 
 // Fichier : routes/etiquettePartenaireRoutes.js
 router.get('/stats', getEtiquettesStats);
+router.get('/etiquettes', getEtiquettesByPartenaire);
 
 router.route('/')
     .post(createEtiquettePartenaire)

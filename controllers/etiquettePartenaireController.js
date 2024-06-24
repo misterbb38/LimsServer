@@ -141,3 +141,221 @@ exports.getEtiquettesStats = asyncHandler(async (req, res) => {
 });
 
 
+// Contrôleur pour obtenir les étiquettes de chaque partenaire filtrables par mois et par année
+
+
+
+// exports.getEtiquettesByPartenaire = asyncHandler(async (req, res) => {
+//     const { mois, annee } = req.query;
+
+//     let matchQuery = {};
+
+//     if (annee) {
+//         const startDate = new Date(`${annee}-01-01`);
+//         const endDate = new Date(`${annee}-12-31`);
+//         matchQuery.createdAt = { $gte: startDate, $lte: endDate };
+//     }
+
+//     if (mois) {
+//         matchQuery['$expr'] = {
+//             $eq: [{ $month: "$createdAt" }, parseInt(mois, 10)]
+//         };
+//     }
+
+//     const stats = await EtiquettePartenaire.aggregate([
+//         { $match: matchQuery },
+//         {
+//             $lookup: {
+//                 from: "partenaires",
+//                 localField: "partenaireId",
+//                 foreignField: "_id",
+//                 as: "partenaireDetails"
+//             }
+//         },
+//         {
+//             $unwind: {
+//                 path: "$partenaireDetails",
+//                 preserveNullAndEmptyArrays: false
+//             }
+//         },
+//         {
+//             $lookup: {
+//                 from: "analyses",
+//                 localField: "analyseId",
+//                 foreignField: "_id",
+//                 as: "analyseDetails"
+//             }
+//         },
+//         {
+//             $unwind: {
+//                 path: "$analyseDetails",
+//                 preserveNullAndEmptyArrays: true
+//             }
+//         },
+//         {
+//             $lookup: {
+//                 from: "users",
+//                 localField: "analyseDetails.userId",
+//                 foreignField: "_id",
+//                 as: "userDetails"
+//             }
+//         },
+//         {
+//             $unwind: {
+//                 path: "$userDetails",
+//                 preserveNullAndEmptyArrays: true
+//             }
+//         },
+//         {
+//             $group: {
+//                 _id: "$partenaireId",
+//                 totalSomme: { $sum: "$sommeAPayer" },
+//                 count: { $sum: 1 },
+//                 etiquettes: {
+//                     $push: {
+//                         _id: "$_id",
+//                         sommeAPayer: "$sommeAPayer",
+//                         createdAt: "$createdAt",
+//                         analyse: {
+//                             _id: "$analyseDetails._id",
+//                             identifiant: "$analyseDetails.identifiant",
+//                             user: {
+//                                 _id: "$userDetails._id",
+//                                 nom: "$userDetails.nom",
+//                                 prenom: "$userDetails.prenom",
+//                                 identifiant: "$userDetails.identifiant"
+//                             }
+//                         },
+//                         partenaireId: "$partenaireId"
+//                     }
+//                 },
+//                 partenaireDetails: { $first: "$partenaireDetails" }
+//             }
+//         },
+//         {
+//             $project: {
+//                 partenaireId: "$_id",
+//                 partenaire: "$partenaireDetails.nom",
+//                 totalSomme: 1,
+//                 count: 1,
+//                 etiquettes: 1,
+//                 telephone: "$partenaireDetails.telephone",
+//                 typePartenaire: "$partenaireDetails.typePartenaire"
+//             }
+//         }
+//     ]);
+
+//     res.status(200).json({
+//         success: true,
+//         data: stats
+//     });
+// });
+
+exports.getEtiquettesByPartenaire = asyncHandler(async (req, res) => {
+    const { mois, annee } = req.query;
+
+    let matchQuery = {};
+
+    if (annee) {
+        const startDate = new Date(`${annee}-01-01`);
+        const endDate = new Date(`${annee}-12-31`);
+        matchQuery.createdAt = { $gte: startDate, $lte: endDate };
+    }
+
+    if (mois) {
+        matchQuery['$expr'] = {
+            $eq: [{ $month: "$createdAt" }, parseInt(mois, 10)]
+        };
+    }
+
+    const stats = await EtiquettePartenaire.aggregate([
+        { $match: matchQuery },
+        {
+            $lookup: {
+                from: "partenaires",
+                localField: "partenaireId",
+                foreignField: "_id",
+                as: "partenaireDetails"
+            }
+        },
+        {
+            $unwind: {
+                path: "$partenaireDetails",
+                preserveNullAndEmptyArrays: false
+            }
+        },
+        {
+            $lookup: {
+                from: "analyses",
+                localField: "analyseId",
+                foreignField: "_id",
+                as: "analyseDetails"
+            }
+        },
+        {
+            $unwind: {
+                path: "$analyseDetails",
+                preserveNullAndEmptyArrays: true
+            }
+        },
+        {
+            $lookup: {
+                from: "users",
+                localField: "analyseDetails.userId",
+                foreignField: "_id",
+                as: "userDetails"
+            }
+        },
+        {
+            $unwind: {
+                path: "$userDetails",
+                preserveNullAndEmptyArrays: true
+            }
+        },
+        {
+            $group: {
+                _id: "$partenaireId",
+                totalSomme: { $sum: "$sommeAPayer" },
+                count: { $sum: 1 },
+                etiquettes: {
+                    $push: {
+                        _id: "$_id",
+                        sommeAPayer: "$sommeAPayer",
+                        createdAt: "$createdAt",
+                        pourcentageCouverture: "$analyseDetails.pourcentageCouverture", // Ajouter ce champ
+                        analyse: {
+                            _id: "$analyseDetails._id",
+                            identifiant: "$analyseDetails.identifiant",
+                            user: {
+                                _id: "$userDetails._id",
+                                nom: "$userDetails.nom",
+                                prenom: "$userDetails.prenom",
+                                identifiant: "$userDetails.identifiant"
+                            }
+                        },
+                        partenaireId: "$partenaireId"
+                    }
+                },
+                partenaireDetails: { $first: "$partenaireDetails" }
+            }
+        },
+        {
+            $project: {
+                partenaireId: "$_id",
+                partenaire: "$partenaireDetails.nom",
+                totalSomme: 1,
+                count: 1,
+                etiquettes: 1,
+                telephone: "$partenaireDetails.telephone",
+                typePartenaire: "$partenaireDetails.typePartenaire"
+            }
+        }
+    ]);
+
+    res.status(200).json({
+        success: true,
+        data: stats
+    });
+});
+
+

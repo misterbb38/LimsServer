@@ -5,7 +5,8 @@ const {
     getPartenaireById,
     updatePartenaire,
     deletePartenaire,
-    importPartenairesFromExcel
+    importPartenairesFromExcel,
+    
 } = require('../controllers/partenaireController');
 
 const { protect } = require('../middleware/authMiddleware');
