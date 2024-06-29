@@ -169,11 +169,16 @@ exports.createAnalyse = asyncHandler(async (req, res) => {
 
     // Calcul du prix partenaire et du prix patient
     if (typePartenaire) {
-      prixPartenaire = (prixTotal * pourcentageCouverture) / 100;
-      prixPatient = prixTotal - prixPartenaire;
-    } else {
-      prixPatient = prixTotal;
-    }
+        if (typePartenaire === 'clinique') {
+          prixPartenaire = prixTotal;
+          prixPatient = prixTotal;
+        } else {
+          prixPartenaire = (prixTotal * pourcentageCouverture) / 100;
+          prixPatient = prixTotal - prixPartenaire;
+        }
+      } else {
+        prixPatient = prixTotal;
+      }
 
     // Appliquer la réduction sur le prixPatient si applicable
     if (reduction && typeReduction) {
@@ -209,7 +214,7 @@ exports.createAnalyse = asyncHandler(async (req, res) => {
     });
 
     // Création d'une étiquette partenaire si nécessaire
-    if (partenaireId && prixPartenaire > 0) {
+    if (partenaireId) {
       await EtiquettePartenaire.create({
         analyseId: nouvelleAnalyse._id,
         partenaireId,
@@ -611,13 +616,19 @@ exports.updateAnalyse = asyncHandler(async (req, res) => {
     // Ajouter pc1, pc2 et deplacement au prix total
     prixTotal += Number(pc1) + Number(pc2) + Number(deplacement);
   
-    if (typePartenaire) {
+   // Calcul du prix partenaire et du prix patient
+if (typePartenaire) {
+    if (typePartenaire === 'clinique') {
+      prixPartenaire = prixTotal;
+      prixPatient = prixTotal;
+    } else {
       prixPartenaire = (prixTotal * pourcentageCouverture) / 100;
       prixPatient = prixTotal - prixPartenaire;
-    } else {
-      prixPatient = prixTotal;
-      prixPartenaire = 0;
     }
+  } else {
+    prixPatient = prixTotal;
+  }
+  
   
     if (reduction && typeReduction) {
       if (typeReduction === 'montant') {
@@ -668,7 +679,7 @@ exports.updateAnalyse = asyncHandler(async (req, res) => {
         // Suppression de l'étiquette si l'analyse n'a plus de partenaire
         await EtiquettePartenaire.findByIdAndDelete(etiquettePartenaire._id);
       }
-    } else if (partenaireId && prixPartenaire > 0) {
+    } else if (partenaireId) {
       // Création d'une nouvelle étiquette si elle n'existe pas et qu'un partenaire est défini
       await EtiquettePartenaire.create({
         analyseId: analyse._id,
@@ -699,7 +710,24 @@ exports.updateAnalyse = asyncHandler(async (req, res) => {
 
 
 // Supprimer une analyse
+// exports.deleteAnalyse = asyncHandler(async (req, res) => {
+//     const analyse = await Analyse.findByIdAndDelete(req.params.id);
+
+//     if (!analyse) {
+//         res.status(404);
+//         throw new Error('Analyse non trouvée');
+//     }
+
+
+//     res.status(200).json({
+//         success: true,
+//         data: {},
+//         message: 'Analyse supprimée avec succès'
+//     });
+// });
+
 exports.deleteAnalyse = asyncHandler(async (req, res) => {
+    // Rechercher l'analyse par ID
     const analyse = await Analyse.findByIdAndDelete(req.params.id);
 
     if (!analyse) {
@@ -707,13 +735,16 @@ exports.deleteAnalyse = asyncHandler(async (req, res) => {
         throw new Error('Analyse non trouvée');
     }
 
+    // Supprimer l'étiquette associée si elle existe
+    await EtiquettePartenaire.deleteMany({ analyseId: analyse._id });
 
     res.status(200).json({
         success: true,
         data: {},
-        message: 'Analyse supprimée avec succès'
+        message: 'Analyse et étiquette associée supprimées avec succès'
     });
 });
+
 
 
 exports.getTestIdsByAnalyse = asyncHandler(async (req, res) => {
