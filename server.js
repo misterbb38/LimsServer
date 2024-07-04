@@ -38,6 +38,10 @@ const testRoutes = require('./routes/testRoutes'); // Mettez à jour le chemin s
 const partenaire = require('./routes/partenaireRoutes');
 const etipartenaire = require('./routes/etiquettePartenaireRoutes');
 const resultatRoutes = require('./routes/resultatRoutes');
+const fileResultatRoutes = require('./routes/fileResultatsRoutes');
+
+
+
 
 
 // Monter les routeurs
@@ -51,7 +55,10 @@ app.use('/api/notification', notification);
 app.use('/api/test', testRoutes);
 app.use('/ordonnances', express.static('ordonnances'));
 app.use('/ordonnances', express.static(path.join(__dirname, 'ordonnances')));
+app.use('/resultatExterne', express.static('resultatExterne'));
+app.use('/resultatExterne', express.static(path.join(__dirname, 'resultatExterne')));
 app.use('/uploads', express.static('uploads'));
+app.use('/api/fileresultats', fileResultatRoutes);
 
 
 

@@ -18,6 +18,11 @@ const AnalyseSchema = new mongoose.Schema({
         ref: 'Resultat',
         required: false
     }],
+    fileResultat: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'FileResultat',
+        required: false
+    }],
     identifiant: {
         type: String,
         unique: true,
@@ -32,6 +37,11 @@ const AnalyseSchema = new mongoose.Schema({
         required: [true, 'Le statut du payement est obligatoire'],
         default: 'Impayée'
     },
+    typeAnalyse: {
+        type: String,
+        required: true,
+        default: 'Interne'
+    },
     ordonnancePdf: {
         type: String,
         required: false
@@ -45,6 +55,7 @@ const AnalyseSchema = new mongoose.Schema({
         required: true,
         default: 0
     },
+
     prixPatient: {
         type: Number,
         required: true,
