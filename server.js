@@ -41,9 +41,6 @@ const resultatRoutes = require('./routes/resultatRoutes');
 const fileResultatRoutes = require('./routes/fileResultatsRoutes');
 
 
-
-
-
 // Monter les routeurs
 app.use('/api/resultats', resultatRoutes);
 app.use('/api/hist', historique);
@@ -53,12 +50,13 @@ app.use('/api/partenaire', partenaire);
 app.use('/api/eti', etipartenaire);
 app.use('/api/notification', notification);
 app.use('/api/test', testRoutes);
+app.use('/api/fileresultats', fileResultatRoutes);
 app.use('/ordonnances', express.static('ordonnances'));
 app.use('/ordonnances', express.static(path.join(__dirname, 'ordonnances')));
 app.use('/resultatExterne', express.static('resultatExterne'));
 app.use('/resultatExterne', express.static(path.join(__dirname, 'resultatExterne')));
 app.use('/uploads', express.static('uploads'));
-app.use('/api/fileresultats', fileResultatRoutes);
+
 
 
 
