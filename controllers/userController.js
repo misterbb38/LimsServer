@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs');
 const asyncHandler = require('../middleware/async.js');
 const User = require('../models/userModel'); // Ajustez le chemin selon votre structure
 const Notification = require('../models/notificationModel.js')
+const cloudinary = require('../config/cloudinaryConfig');
 const { getNextNip } = require('../middleware/idGenerator');
 
 // const Counter = require('../models/Counter');
@@ -239,7 +240,56 @@ exports.updateProfile = asyncHandler(async (req, res) => {
 });
 
 
-// Modifier le profil de l'utilisateur
+// // Modifier le profil de l'utilisateur
+// exports.updateProfileUser = asyncHandler(async (req, res) => {
+//   const user = await User.findById(req.user._id);
+
+//   if (user) {
+//     user.nom = req.body.nom || user.nom;
+//     user.prenom = req.body.prenom || user.prenom;
+//     user.email = req.body.email || user.email;
+//     user.nomEntreprise = req.body.nomEntreprise || user.nomEntreprise;
+//     user.adresse = req.body.adresse || user.adresse;
+//     user.site = req.body.site || user.site;
+//     user.telephone = req.body.telephone || user.telephone;
+//     user.telephone = req.body.telephone || user.telephone;
+//     user.userType = req.body.userType || user.userType;
+//     user.devise = req.body.devise || user.devise;
+//     user.couleur = req.body.couleur || user.couleur;
+
+//     // Mettre à jour le logo seulement si un nouveau fichier a été uploadé
+//     if (req.file) {
+//       user.logo = req.file.path;
+//     }
+//     user.devise = req.body.devise || user.devise;
+
+//     // Vérifiez si un nouveau mot de passe est fourni
+//     if (req.body.password) {
+//       // Hacher le nouveau mot de passe avant de le sauvegarder
+//       const salt = await bcrypt.genSalt(10);
+//       user.password = await bcrypt.hash(req.body.password, salt);
+//     }
+
+//     const updatedUser = await user.save();
+
+//     res.json({
+//       _id: updatedUser._id,
+//       nom: updatedUser.nom,
+//       prenom: updatedUser.prenom,
+//       email: updatedUser.email,
+//       adresse: updatedUser.adresse,
+//       telephone: updatedUser.telephone,
+//       userType: updatedUser.userType,
+//       logo: updatedUser.logo, // Assurez-vous que votre client gère correctement le chemin du fichier
+//       devise: updatedUser.devise,
+//       token: generateToken(updatedUser._id), // Générer un nouveau token avec le profil mis à jour
+//     });
+//   } else {
+//     res.status(404);
+//     throw new Error('Utilisateur non trouvé.');
+//   }
+// });
+
 exports.updateProfileUser = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user._id);
 
@@ -251,20 +301,21 @@ exports.updateProfileUser = asyncHandler(async (req, res) => {
     user.adresse = req.body.adresse || user.adresse;
     user.site = req.body.site || user.site;
     user.telephone = req.body.telephone || user.telephone;
-    user.telephone = req.body.telephone || user.telephone;
     user.userType = req.body.userType || user.userType;
     user.devise = req.body.devise || user.devise;
     user.couleur = req.body.couleur || user.couleur;
 
-    // Mettre à jour le logo seulement si un nouveau fichier a été uploadé
     if (req.file) {
-      user.logo = req.file.path;
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        folder: 'userSignature',
+        use_filename: true,
+        unique_filename: false,
+        type: 'upload'
+      });
+      user.logo = result.secure_url;
     }
-    user.devise = req.body.devise || user.devise;
 
-    // Vérifiez si un nouveau mot de passe est fourni
     if (req.body.password) {
-      // Hacher le nouveau mot de passe avant de le sauvegarder
       const salt = await bcrypt.genSalt(10);
       user.password = await bcrypt.hash(req.body.password, salt);
     }
@@ -279,9 +330,9 @@ exports.updateProfileUser = asyncHandler(async (req, res) => {
       adresse: updatedUser.adresse,
       telephone: updatedUser.telephone,
       userType: updatedUser.userType,
-      logo: updatedUser.logo, // Assurez-vous que votre client gère correctement le chemin du fichier
+      logo: updatedUser.logo,
       devise: updatedUser.devise,
-      token: generateToken(updatedUser._id), // Générer un nouveau token avec le profil mis à jour
+      token: generateToken(updatedUser._id),
     });
   } else {
     res.status(404);
