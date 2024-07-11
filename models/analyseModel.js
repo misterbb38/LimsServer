@@ -118,6 +118,10 @@ const AnalyseSchema = new mongoose.Schema({
         required: false,
         default: null
     },
+    smsCount: {
+        type: Number,
+        default: 0,
+      },
 }, { timestamps: true });
 
 // Middleware pour recalculer montantRecus, avance, et reliquat avant de sauvegarder un document

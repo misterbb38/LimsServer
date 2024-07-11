@@ -258,7 +258,7 @@ exports.createAnalyse = asyncHandler(async (req, res) => {
 
 exports.getAnalyses = asyncHandler(async (req, res) => {
     const analyses = await Analyse.find()
-        .populate('userId', 'nom prenom email adresse  telephone dateNaissance age nip createdAt updatedAt sexe') // Inclure createdAt et updatedAt
+        .populate('userId', 'nom prenom email adresse  smsCount telephone dateNaissance age nip createdAt updatedAt sexe') // Inclure createdAt et updatedAt
         .populate('tests', 'nom description categories machineA machineB valeurMachineA valeurMachineB interpretationA interpretationB prixAssurance prixPaf prixSococim  prixClinique prixIpm coeficiantB  montantRecus') // Inclure createdAt et updatedAt
         .populate('partenaireId', 'nom typePartenaire')
         .populate({
@@ -316,7 +316,7 @@ exports.getAnalysesPatient = asyncHandler(async (req, res) => {
     const userId = req.user._id; // Utilisez l'ID de l'utilisateur connecté
 
     const analyses = await Analyse.find({ userId: userId }) // Assurez-vous que ce champ correspond à votre modèle de base de données
-        .populate('userId', 'nom prenom email adresse telephone dateNaissance age nip createdAt updatedAt')
+        .populate('userId', 'nom prenom email adresse  smsCount telephone dateNaissance age nip createdAt updatedAt')
         .populate('userId', 'nom prenom email adresse  telephone dateNaissance age nip createdAt updatedAt sexe') // Inclure createdAt et updatedAt
         .populate('tests', 'nom description categories machineA machineB valeurMachineA valeurMachineB interpretationA interpretationB prixAssurance prixPaf prixIpm prixSococim  prixClinique coeficiantB  montantRecus') // Inclure createdAt et updatedAt
         .populate('partenaireId', 'nom typePartenaire')
@@ -388,7 +388,7 @@ exports.getAnalysesClinique = asyncHandler(async (req, res) => {
     }
 
     const analyses = await Analyse.find({ partenaireId: partenaireId })
-        .populate('userId', 'nom prenom email adresse telephone dateNaissance age nip createdAt updatedAt sexe')
+        .populate('userId', 'nom prenom email adresse  smsCount telephone dateNaissance age nip createdAt updatedAt sexe')
         .populate('tests', 'nom description categories machineA machineB valeurMachineA valeurMachineB interpretationA interpretationB prixAssurance prixPaf prixIpm prixSococim  prixClinique coeficiantB montantRecus')
         .populate('partenaireId', 'nom typePartenaire')
         .populate({
@@ -433,7 +433,7 @@ exports.getAnalysesClinique = asyncHandler(async (req, res) => {
 
 exports.getAnalyse = asyncHandler(async (req, res) => {
     const analyse = await Analyse.findById(req.params.id)
-        .populate('userId', 'nom prenom email  adresse dateNaissance age nip telephone createdAt updatedAt sexe ')
+        .populate('userId', 'nom prenom email  smsCount adresse dateNaissance age nip telephone createdAt updatedAt sexe ')
         .populate('tests', 'nom description categories machineA machineB machineA machineB valeurMachineA valeurMachineB interpretationA interpretationB prixSococime prixAssurance prixPaf prixIpm prixClinique coeficiantB  montantRecus categorie')
         .populate('partenaireId', 'nom typePartenaire')
         .populate({

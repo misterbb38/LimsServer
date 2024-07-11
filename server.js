@@ -39,6 +39,7 @@ const partenaire = require('./routes/partenaireRoutes');
 const etipartenaire = require('./routes/etiquettePartenaireRoutes');
 const resultatRoutes = require('./routes/resultatRoutes');
 const fileResultatRoutes = require('./routes/fileResultatsRoutes');
+const smsRoutes = require('./routes/smsRoutes');
 
 
 // Monter les routeurs
@@ -51,6 +52,7 @@ app.use('/api/eti', etipartenaire);
 app.use('/api/notification', notification);
 app.use('/api/test', testRoutes);
 app.use('/api/fileresultats', fileResultatRoutes);
+app.use('/api/sms', smsRoutes);
 app.use('/ordonnances', express.static('ordonnances'));
 app.use('/ordonnances', express.static(path.join(__dirname, 'ordonnances')));
 app.use('/resultatExterne', express.static('resultatExterne'));
