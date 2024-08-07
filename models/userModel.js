@@ -13,6 +13,7 @@ const userSchema = new mongoose.Schema({
   },
   email: {
     type: String,
+    require:false,
     
     lowercase: true,
     trim: true,
@@ -77,6 +78,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: "blue",
   },
+  
 }, { timestamps: true });
 
 // Hook pour hasher le mot de passe avant de sauvegarder l'utilisateur

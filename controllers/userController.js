@@ -27,52 +27,8 @@ const generateToken = (id) => {
 };
 
 // Inscription d'un nouvel utilisateur
-// exports.signup = asyncHandler(async (req, res) => {
-//   const { nom, prenom, email, dateNaissance, password, adresse, telephone, userType,partenaireId, age } = req.body;
 
-//   // Vérifier si l'utilisateur existe déjà
-//   // const userExists = await User.findOne({ telephone });
-//   // if (userExists) {
-//   //   res.status(400);
-//   //   throw new Error('Un utilisateur existe déjà avec cet telephone');
-//   // }
-//   const nip = await getNextId('patientId'); // Générer l'identifiant
-//   // Créer un nouvel utilisateur
-//   const user = await User.create({
-//     nom,
-//     prenom,
-//     email,
-//     dateNaissance,
-//     password, // Sera hashé automatiquement par le hook pre 'save'
-//     adresse,
-//     telephone,
-//     age,
-//     nip,
-//     userType,
-//     partenaireId,
 
-//   });
-
-//   if (user) {
-//     res.status(201).json({
-//       _id: user._id,
-//       nom: user.nom,
-//       prenom: user.prenom,
-//       email: user.email,
-//       adresse: user.adresse,
-//       telephone: user.telephone,
-//       adresse: user.adresse,
-//       userType: user.userType,
-//       partenaireId: user.partenaireId, // Inclure le partenaireId dans la réponse
-//       token: generateToken(user._id), // Envoi du token JWT pour authentification immédiate
-//     });
-//   } else {
-//     res.status(400);
-//     throw new Error('Données d\'utilisateur invalides');
-//   }
-// });
-
-// Inscription d'un nouvel utilisateur
 exports.signup = asyncHandler(async (req, res) => {
   const { nom, prenom, email, dateNaissance, password, adresse, telephone, userType, partenaireId, age, sexe } = req.body;
 
@@ -120,6 +76,7 @@ exports.signup = asyncHandler(async (req, res) => {
   }
 });
 
+
 // // Connexion d'un utilisateur
 exports.login = asyncHandler(async (req, res) => {
   const { password, nip } = req.body;
@@ -151,6 +108,7 @@ exports.login = asyncHandler(async (req, res) => {
     throw new Error('Email ou mot de passe invalide');
   }
 });
+
 
 
 
@@ -233,7 +191,7 @@ exports.updateProfile = asyncHandler(async (req, res) => {
   }).select('-password');
 
   if (updatedUser) {
-    res.json({ success: true, data: updatedUser });
+    res.json({ success: true, data: updatedUser, message: 'deja a jour' });
   } else {
     res.status(404).json({ message: 'Utilisateur non trouvé.' });
   }
