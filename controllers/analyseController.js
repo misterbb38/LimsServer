@@ -273,7 +273,7 @@ exports.getAnalyses = asyncHandler(async (req, res) => {
 
         .populate({
             path: 'resultat', // Modifier ici pour correspondre au champ de votre schéma Analyse qui contient les ID des résultats
-            select: 'valeur remarque qualitatif interpretationA interpretationB methode dernierResultatAnterieur testId statutInterpretation typePrelevement lieuPrelevement statutMachine datePrelevement updatedBy createdAt updatedAt observations culture gram conclusion remarque',
+            select: 'valeur exceptions remarque qualitatif  interpretationA interpretationB methode dernierResultatAnterieur testId statutInterpretation typePrelevement lieuPrelevement statutMachine datePrelevement updatedBy createdAt updatedAt observations culture gram conclusion remarque',
             populate: [
                 {
                     path: 'testId',

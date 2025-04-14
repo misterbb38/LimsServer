@@ -40,6 +40,7 @@ const etipartenaire = require('./routes/etiquettePartenaireRoutes');
 const resultatRoutes = require('./routes/resultatRoutes');
 const fileResultatRoutes = require('./routes/fileResultatsRoutes');
 const smsRoutes = require('./routes/smsRoutes');
+const calculerNfsRoutes = require('./routes/calculer-nfsRoutes')
 
 
 // Monter les routeurs
@@ -58,6 +59,7 @@ app.use('/ordonnances', express.static(path.join(__dirname, 'ordonnances')));
 app.use('/resultatExterne', express.static('resultatExterne'));
 // app.use('/resultatExterne', express.static(path.join(__dirname, 'resultatExterne')));
 app.use('/uploads', express.static('uploads'));
+app.use('/api/calculer-nfs', calculerNfsRoutes)
 
 
 
