@@ -41,6 +41,9 @@ const resultatRoutes = require('./routes/resultatRoutes');
 const fileResultatRoutes = require('./routes/fileResultatsRoutes');
 const smsRoutes = require('./routes/smsRoutes');
 const calculerNfsRoutes = require('./routes/calculer-nfsRoutes')
+const pdfRoutes = require('./routes/pdfRoutes');
+const reportTemplateRoutes = require('./routes/reportTemplateRoutes'); // ← AJOUTEZ CETTE LIGNE
+
 
 
 // Monter les routeurs
@@ -60,8 +63,19 @@ app.use('/resultatExterne', express.static('resultatExterne'));
 // app.use('/resultatExterne', express.static(path.join(__dirname, 'resultatExterne')));
 app.use('/uploads', express.static('uploads'));
 app.use('/api/calculer-nfs', calculerNfsRoutes)
-
-
+app.use('/api/pdf', pdfRoutes);
+app.use('/api/report-templates', reportTemplateRoutes); // ← AJOUTEZ CETTE LIGNE
+// 3. AJOUTEZ cette route de test (optionnel, pour vérifier que ça marche)
+app.get('/api/test-pdf', (req, res) => {
+  res.json({
+    message: '✅ Routes PDF disponibles',
+    routes: [
+      'GET /api/pdf/analyse/:id - Générer PDF',
+      'GET /api/pdf/analyse/:id/preview - Prévisualiser HTML'
+    ],
+    timestamp: new Date().toISOString()
+  });
+});
 
 
 // Correction pour définir une route racine
