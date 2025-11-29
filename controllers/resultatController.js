@@ -4,59 +4,6 @@ const Analyse = require('../models/analyseModel');
 
 
 
-// exports.createResultat = asyncHandler(async (req, res) => {
-//     const {
-//         analyseId,
-//         testId,
-//         patientId,
-//         observations, // Ajout du champ observations
-//         culture, // Ajout du champ culture
-//         gram, // Ajout du champ gram
-//         conclusion, // Ajout du champ conclusion
-//         valeur,
-//         interpretation,
-//         methode,
-//         statutMachine,
-//         statutInterpretation,
-//         typePrelevement,
-//         lieuPrelevement,
-//         datePrelevement,
-//         qualitatif,
-//         remarque,
-//         updatedBy
-//     } = req.body;
-
-//     // Chercher le dernier résultat pour ce test et ce patient
-//     const dernierResultat = await Resultat.findOne({ testId, patientId }).sort({ createdAt: -1 });
-
-//     // Création du nouveau résultat avec le dernierResultatAnterieur si disponible
-//     const newResultat = await Resultat.create({
-//         analyseId,
-//         testId,
-//         patientId,
-//         observations, // Ajout du champ observations
-//         culture, // Ajout du champ culture
-//         gram, // Ajout du champ gram
-//         conclusion, // Ajout du champ conclusion
-//         valeur,
-//         dernierResultatAnterieur: dernierResultat ? { valeur: dernierResultat.valeur, date: dernierResultat.createdAt } : null,
-//         interpretation,
-//         statutMachine,
-//         methode,
-//         statutInterpretation,
-//         typePrelevement,
-//         lieuPrelevement,
-//         datePrelevement,
-//         qualitatif,
-//         remarque,
-//         updatedBy
-//     });
-
-//     // Mettre à jour l'analyse avec le nouveau résultat
-//     await Analyse.findByIdAndUpdate(analyseId, { $push: { resultat: newResultat._id } });
-
-//     res.status(201).json({ success: true, data: newResultat });
-// });
 
 
 
