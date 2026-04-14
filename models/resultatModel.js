@@ -357,6 +357,20 @@ compteAddis: {
       bilirubineTotale: { valeur: Number, unite: String },   // mg/L
       bilirubineDirecte: { valeur: Number, unite: String },  // mg/L
       bilirubineIndirecte: { valeur: Number, unite: String } // mg/L (calculé)
+    },
+
+    // 15. Gaz du sang (Biochimie sanguine)
+    // Unites et references figees (standards cliniques).
+    // HCO3 et tCO2 peuvent etre calcules automatiquement (voir hook pre('save'))
+    // si pH et pCO2 sont fournis mais que ces valeurs sont manquantes.
+    gazDuSang: {
+      ph:          { valeur: Number, unite: String, reference: String }, // 7,35 - 7,45
+      pco2:        { valeur: Number, unite: String, reference: String }, // mmHg, 35 - 45
+      po2:         { valeur: Number, unite: String, reference: String }, // mmHg, 70 - 115
+      excesDeBase: { valeur: Number, unite: String, reference: String }, // mmol/l, -2,0 - 2,0
+      tco2:        { valeur: Number, unite: String, reference: String }, // mmol/l, 23 - 27 (calculable)
+      hco3:        { valeur: Number, unite: String, reference: String }, // mmol/l, 22 - 26 (calculable)
+      sao2:        { valeur: Number, unite: String, reference: String }, // %, 95 - 99
     }
   },
 
@@ -632,6 +646,50 @@ if (exceptions.compteAddis) {
       };
     }
   }
+
+  // 15. Gaz du sang
+  // Normalisation unites/references figees + calculs automatiques
+  // si certaines valeurs derivables sont absentes.
+  if (exceptions.gazDuSang) {
+    const g = exceptions.gazDuSang;
+
+    // Unites et references par defaut (ecrasent toute valeur deja presente pour garantir la coherence)
+    const defaults = {
+      ph:          { unite: '',       reference: '7,35 - 7,45' },
+      pco2:        { unite: 'mmHg',   reference: '35 - 45' },
+      po2:         { unite: 'mmHg',   reference: '70 - 115' },
+      excesDeBase: { unite: 'mmol/l', reference: '-2,0 - 2,0' },
+      tco2:        { unite: 'mmol/l', reference: '23 - 27' },
+      hco3:        { unite: 'mmol/l', reference: '22 - 26' },
+      sao2:        { unite: '%',      reference: '95 - 99' },
+    };
+    Object.keys(defaults).forEach((k) => {
+      if (!g[k]) g[k] = {};
+      g[k].unite     = defaults[k].unite;
+      g[k].reference = defaults[k].reference;
+    });
+
+    // Henderson-Hasselbalch : HCO3 = 0,03 * pCO2 * 10^(pH - 6,1)
+    // Calcule uniquement si pH et pCO2 sont renseignes et HCO3 ne l'est pas.
+    const ph   = parseFloat(g.ph?.valeur);
+    const pco2 = parseFloat(g.pco2?.valeur);
+    if (!Number.isNaN(ph) && !Number.isNaN(pco2)) {
+      if (g.hco3?.valeur === undefined || g.hco3?.valeur === null || g.hco3?.valeur === '') {
+        const hco3Calc = 0.03 * pco2 * Math.pow(10, ph - 6.1);
+        g.hco3.valeur = parseFloat(hco3Calc.toFixed(1));
+      }
+    }
+
+    // tCO2 = HCO3 + 0,03 * pCO2
+    // Calcule uniquement si HCO3 et pCO2 sont connus et tCO2 ne l'est pas.
+    const hco3 = parseFloat(g.hco3?.valeur);
+    if (!Number.isNaN(hco3) && !Number.isNaN(pco2)) {
+      if (g.tco2?.valeur === undefined || g.tco2?.valeur === null || g.tco2?.valeur === '') {
+        const tco2Calc = hco3 + 0.03 * pco2;
+        g.tco2.valeur = parseFloat(tco2Calc.toFixed(1));
+      }
+    }
+  }
 }
 
 // -----------------------------------------------------------------------------
@@ -764,7 +822,8 @@ resultatSchema.pre('findOneAndUpdate', async function(next) {
     'exceptions.dfg', 'exceptions.saturationTransferrine', 'exceptions.compteAddis',
     'exceptions.calciumCorrige', 'exceptions.rapportAlbuminurie', 'exceptions.rapportProteines',
     'exceptions.cholesterolLdl', 'exceptions.lipidesTotaux', 'exceptions.microalbuminurie24h',
-    'exceptions.proteinurie24h', 'exceptions.bilirubineIndirecte'
+    'exceptions.proteinurie24h', 'exceptions.bilirubineIndirecte',
+    'exceptions.gazDuSang'
   ];
 
   exceptionFields.forEach(field => {
