@@ -371,6 +371,13 @@ compteAddis: {
       tco2:        { valeur: Number, unite: String, reference: String }, // mmol/l, 23 - 27 (calculable)
       hco3:        { valeur: Number, unite: String, reference: String }, // mmol/l, 22 - 26 (calculable)
       sao2:        { valeur: Number, unite: String, reference: String }, // %, 95 - 99
+    },
+
+    // 16. Taux de Prothrombine (TP + INR sont mesures sur le meme tube)
+    // Unites et references figees.
+    tauxProthrombine: {
+      tp:  { valeur: Number, unite: String, reference: String }, // %,    > 70
+      inr: { valeur: Number, unite: String, reference: String }, // sans, 0,9 - 1,2
     }
   },
 
@@ -690,6 +697,22 @@ if (exceptions.compteAddis) {
       }
     }
   }
+
+  // 16. Taux de Prothrombine (TP + INR)
+  // Normalisation des unites/references figees. Pas de calcul derive :
+  // TP et INR sortent directement de l'appareil.
+  if (exceptions.tauxProthrombine) {
+    const tp = exceptions.tauxProthrombine;
+    const defaults = {
+      tp:  { unite: '%', reference: '> 70' },
+      inr: { unite: '',  reference: '0,9 - 1,2' },
+    };
+    Object.keys(defaults).forEach((k) => {
+      if (!tp[k]) tp[k] = {};
+      tp[k].unite     = defaults[k].unite;
+      tp[k].reference = defaults[k].reference;
+    });
+  }
 }
 
 // -----------------------------------------------------------------------------
@@ -823,7 +846,7 @@ resultatSchema.pre('findOneAndUpdate', async function(next) {
     'exceptions.calciumCorrige', 'exceptions.rapportAlbuminurie', 'exceptions.rapportProteines',
     'exceptions.cholesterolLdl', 'exceptions.lipidesTotaux', 'exceptions.microalbuminurie24h',
     'exceptions.proteinurie24h', 'exceptions.bilirubineIndirecte',
-    'exceptions.gazDuSang'
+    'exceptions.gazDuSang', 'exceptions.tauxProthrombine'
   ];
 
   exceptionFields.forEach(field => {
