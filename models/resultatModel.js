@@ -704,7 +704,7 @@ if (exceptions.compteAddis) {
   if (exceptions.tauxProthrombine) {
     const tp = exceptions.tauxProthrombine;
     const defaults = {
-      tp:  { unite: '%', reference: '> 70' },
+      tp:  { unite: '%', reference: '> 70 %' },
       inr: { unite: '',  reference: '0,9 - 1,2' },
     };
     Object.keys(defaults).forEach((k) => {
