@@ -378,6 +378,52 @@ compteAddis: {
     tauxProthrombine: {
       tp:  { valeur: Number, unite: String, reference: String }, // %,    > 70
       inr: { valeur: Number, unite: String, reference: String }, // sans, 0,9 - 1,2
+    },
+
+    // 17. Spermogramme + Spermocytogramme
+    // Bilan d'evaluation de la fertilite masculine (normes OMS).
+    // Champs numeriques : pattern standard { valeur, unite, reference }.
+    // Champs textuels (viscosite, aspect, agglutinats...) : String simple
+    // alimente cote front via des listes deroulantes predefinies.
+    spermogramme: {
+      // Metadonnees pre-analytique
+      dureeAbstinence: { valeur: Number, unite: String, reference: String }, // jours
+      modePrelevement: String, // 'au laboratoire' / 'apporte au laboratoire'
+
+      // CARACTERES GENERAUX
+      volume:    { valeur: Number, unite: String, reference: String }, // ml,  > 1,5
+      ph:        { valeur: Number, unite: String, reference: String }, // sans, > 7,2
+      viscosite: String, // faible / normale / elevee
+      aspect:    String, // normal / anormal
+
+      // NUMERATION DES SPERMATOZOIDES
+      numeration:           { valeur: Number, unite: String, reference: String }, // /ml, >= 16 000 000
+      ejaculatTotal:        { valeur: Number, unite: String, reference: String }, // total, >= 39 000 000 (calcule)
+      agglutinatsSpontanes: String, // absents / presents / nombreux
+      leucocytes:           String, // absents / rares / presents / nombreux
+      hematies:             String, // absentes / rares / presentes / nombreuses
+      cellulesRondes:       String, // absentes / rares / presentes / nombreuses
+
+      // VITALITE (test de Williams - 1h apres emission)
+      spermatozoidesVivants: { valeur: Number, unite: String, reference: String }, // %, >= 54
+
+      // MOBILITE
+      mobiliteProgressive:    { valeur: Number, unite: String, reference: String }, // %, > 30 a 1h
+      mobiliteNonProgressive: { valeur: Number, unite: String, reference: String }, // %
+      immobiles:              { valeur: Number, unite: String, reference: String }, // %
+
+      // SPERMOCYTOGRAMME (morphologie)
+      morphoNormal:       { count: Number, pourcentage: Number, reference: String }, // >= 4
+      morphoAnormal:      { count: Number, pourcentage: Number },
+      defautsTete:        { count: Number, pourcentage: Number },
+      defautsPieceInter:  { count: Number, pourcentage: Number },
+      defautsFlagelle:    { count: Number, pourcentage: Number },
+      resteCytoplasmique: { count: Number, pourcentage: Number },
+      indexAnomaliesMultiples: { valeur: Number },
+
+      // CONCLUSION
+      conclusionSpermogramme:     String, // Normozoospermie / Oligospermie / Asthenospermie / ...
+      conclusionSpermocytogramme: String, // Normal / Teratospermie / ...
     }
   },
 
@@ -713,6 +759,45 @@ if (exceptions.compteAddis) {
       tp[k].reference = defaults[k].reference;
     });
   }
+
+  // 17. Spermogramme : normes OMS figees + calcul automatique de
+  // l'ejaculat total (volume x numeration) quand les deux sont saisis.
+  if (exceptions.spermogramme) {
+    const s = exceptions.spermogramme;
+    const defaults = {
+      dureeAbstinence:        { unite: 'jours', reference: '2 - 7' },
+      volume:                 { unite: 'ml',    reference: '> 1,5' },
+      ph:                     { unite: '',      reference: '> 7,2' },
+      numeration:             { unite: '/ml',   reference: '>= 16 000 000' },
+      ejaculatTotal:          { unite: '',      reference: '>= 39 000 000' },
+      spermatozoidesVivants:  { unite: '%',     reference: '>= 54' },
+      mobiliteProgressive:    { unite: '%',     reference: '> 30 a 1h' },
+      mobiliteNonProgressive: { unite: '%',     reference: '' },
+      immobiles:              { unite: '%',     reference: '' },
+    };
+    Object.keys(defaults).forEach((k) => {
+      if (!s[k]) s[k] = {};
+      s[k].unite     = defaults[k].unite;
+      s[k].reference = defaults[k].reference;
+    });
+
+    // Reference pour la morphologie normale (norme stricte OMS)
+    if (!s.morphoNormal) s.morphoNormal = {};
+    s.morphoNormal.reference = '>= 4 %';
+
+    // Calcul automatique : ejaculat total = volume (ml) x numeration (/ml)
+    const volumeVal     = parseFloat(s.volume?.valeur);
+    const numerationVal = parseFloat(s.numeration?.valeur);
+    if (
+      !Number.isNaN(volumeVal) && !Number.isNaN(numerationVal) &&
+      volumeVal > 0 && numerationVal > 0 &&
+      (s.ejaculatTotal.valeur === undefined ||
+       s.ejaculatTotal.valeur === null ||
+       s.ejaculatTotal.valeur === '')
+    ) {
+      s.ejaculatTotal.valeur = Math.round(volumeVal * numerationVal);
+    }
+  }
 }
 
 // -----------------------------------------------------------------------------
@@ -846,7 +931,8 @@ resultatSchema.pre('findOneAndUpdate', async function(next) {
     'exceptions.calciumCorrige', 'exceptions.rapportAlbuminurie', 'exceptions.rapportProteines',
     'exceptions.cholesterolLdl', 'exceptions.lipidesTotaux', 'exceptions.microalbuminurie24h',
     'exceptions.proteinurie24h', 'exceptions.bilirubineIndirecte',
-    'exceptions.gazDuSang', 'exceptions.tauxProthrombine'
+    'exceptions.gazDuSang', 'exceptions.tauxProthrombine',
+    'exceptions.spermogramme'
   ];
 
   exceptionFields.forEach(field => {
