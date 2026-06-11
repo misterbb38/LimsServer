@@ -419,11 +419,14 @@ compteAddis: {
       defautsPieceInter:  { count: Number, pourcentage: Number },
       defautsFlagelle:    { count: Number, pourcentage: Number },
       resteCytoplasmique: { count: Number, pourcentage: Number },
-      indexAnomaliesMultiples: { valeur: Number },
+      indexAnomaliesMultiples: { valeur: Number, reference: String }, // < 1,6
 
       // CONCLUSION
       conclusionSpermogramme:     String, // Normozoospermie / Oligospermie / Asthenospermie / ...
       conclusionSpermocytogramme: String, // Normal / Teratospermie / ...
+
+      // COMMENTAIRES (liste libre, predefinie + saisie manuelle)
+      commentaires: [String],
     }
   },
 
@@ -784,6 +787,11 @@ if (exceptions.compteAddis) {
     // Reference pour la morphologie normale (norme stricte OMS)
     if (!s.morphoNormal) s.morphoNormal = {};
     s.morphoNormal.reference = '>= 4 %';
+
+    // Reference pour l'Index anomalies multiples : < 1,6 (normes OMS).
+    // L'IAM = total anomalies relevees / spermatozoides anormaux.
+    if (!s.indexAnomaliesMultiples) s.indexAnomaliesMultiples = {};
+    s.indexAnomaliesMultiples.reference = '< 1,6';
 
     // Calcul automatique : ejaculat total = volume (ml) x numeration (/ml)
     // On retire les espaces (separateurs de milliers a la francaise) avant
