@@ -786,15 +786,18 @@ if (exceptions.compteAddis) {
     s.morphoNormal.reference = '>= 4 %';
 
     // Calcul automatique : ejaculat total = volume (ml) x numeration (/ml)
-    const volumeVal     = parseFloat(s.volume?.valeur);
-    const numerationVal = parseFloat(s.numeration?.valeur);
+    // On retire les espaces (separateurs de milliers a la francaise) avant
+    // parseFloat, sinon "1 580 000" parse en 1.
+    const sanitize = (v) => parseFloat(String(v ?? '').replace(/\s/g, '').replace(',', '.'));
+    const volumeVal     = sanitize(s.volume?.valeur);
+    const numerationVal = sanitize(s.numeration?.valeur);
     if (
       !Number.isNaN(volumeVal) && !Number.isNaN(numerationVal) &&
-      volumeVal > 0 && numerationVal > 0 &&
-      (s.ejaculatTotal.valeur === undefined ||
-       s.ejaculatTotal.valeur === null ||
-       s.ejaculatTotal.valeur === '')
+      volumeVal > 0 && numerationVal > 0
     ) {
+      // Recalcule systematiquement (et non plus seulement si vide) : la valeur
+      // est toujours derivable de volume * numeration. Ainsi si l'utilisateur
+      // modifie l'un des deux apres coup, le total reste coherent.
       s.ejaculatTotal.valeur = Math.round(volumeVal * numerationVal);
     }
   }
