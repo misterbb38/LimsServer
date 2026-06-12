@@ -74,7 +74,11 @@ exports.sendResultatByEmail = asyncHandler(async (req, res) => {
   const attachmentName = identifiant
     ? `resultat-${identifiant}.pdf`
     : `resultat.pdf`;
-  const replyTo = process.env.SMTP_USER || 'contact@bioram.org';
+  // Reply-To independant de l'expediteur : si SMTP_USER pointe sur le
+  // sandbox Resend (onboarding@resend.dev), on garde quand meme l'adresse
+  // contact@bioram.org pour les reponses, via MAIL_REPLY_TO en priorite.
+  const replyTo =
+    process.env.MAIL_REPLY_TO || 'contact@bioram.org';
 
   try {
     // Resend attend le contenu de la piece jointe en Buffer, pas un path.
