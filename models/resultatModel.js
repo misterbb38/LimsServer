@@ -768,13 +768,13 @@ if (exceptions.compteAddis) {
   if (exceptions.spermogramme) {
     const s = exceptions.spermogramme;
     const defaults = {
-      dureeAbstinence:        { unite: 'jours', reference: '2 - 7' },
+      dureeAbstinence:        { unite: 'jour', reference: '2 - 7' },
       volume:                 { unite: 'ml',    reference: '> 1,5' },
       ph:                     { unite: '',      reference: '> 7,2' },
-      numeration:             { unite: '/ml',   reference: '>= 16 000 000' },
-      ejaculatTotal:          { unite: '',      reference: '>= 39 000 000' },
-      spermatozoidesVivants:  { unite: '%',     reference: '>= 54' },
-      mobiliteProgressive:    { unite: '%',     reference: '> 30 a 1h' },
+      numeration:             { unite: '/ml',   reference: '≥ 16 000 000' },
+      ejaculatTotal:          { unite: '',      reference: '≥ 39 000 000' },
+      spermatozoidesVivants:  { unite: '%',     reference: '≥ 54' },
+      mobiliteProgressive:    { unite: '%',     reference: '> 30 % à 1h' },
       mobiliteNonProgressive: { unite: '%',     reference: '' },
       immobiles:              { unite: '%',     reference: '' },
     };
@@ -786,7 +786,7 @@ if (exceptions.compteAddis) {
 
     // Reference pour la morphologie normale (norme stricte OMS)
     if (!s.morphoNormal) s.morphoNormal = {};
-    s.morphoNormal.reference = '>= 4 %';
+    s.morphoNormal.reference = '≥ 4 %';
 
     // Reference pour l'Index anomalies multiples : < 1,6 (normes OMS).
     // L'IAM = total anomalies relevees / spermatozoides anormaux.
