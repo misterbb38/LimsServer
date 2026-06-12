@@ -30,6 +30,7 @@
     "pdfkit": "^0.14.0",
     "puppeteer": "^24.11.2",
     "read-excel-file": "^5.7.1",
+    "resend": "^6.12.4",
     "slugify": "^1.6.6",
     "smsorange": "^2.0.5",
     "uuid": "^9.0.1"

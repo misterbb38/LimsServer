@@ -1,13 +1,15 @@
 // Partage d'un PDF de resultat.
 //   - WhatsApp : upload sur Cloudinary -> renvoie URL publique (cote front,
 //                ouverture de wa.me avec lien pre-rempli).
-//   - Email    : envoi direct via SMTP IONOS, PDF en piece jointe.
+//   - Email    : envoi direct via l'API Resend (HTTPS), PDF en piece jointe.
+//                Nodemailer/SMTP a ete retire car Render bloque les ports
+//                465 et 587 sortants.
 //
 // Pas d'enregistrement en base : these are one-shot operations.
 
 const asyncHandler = require('express-async-handler');
 const cloudinary = require('../config/cloudinaryConfig');
-const { transporter, fromAddress } = require('../config/mailerConfig');
+const { sendMail } = require('../config/mailerConfig');
 const fs = require('fs');
 
 exports.uploadResultatPdf = asyncHandler(async (req, res) => {
@@ -75,8 +77,10 @@ exports.sendResultatByEmail = asyncHandler(async (req, res) => {
   const replyTo = process.env.SMTP_USER || 'contact@bioram.org';
 
   try {
-    await transporter.sendMail({
-      from: fromAddress(),
+    // Resend attend le contenu de la piece jointe en Buffer, pas un path.
+    const pdfBuffer = fs.readFileSync(req.file.path);
+
+    await sendMail({
       to,
       replyTo,
       subject: subject || `Résultats d'analyses - Laboratoire Bioram`,
@@ -84,7 +88,7 @@ exports.sendResultatByEmail = asyncHandler(async (req, res) => {
       attachments: [
         {
           filename: attachmentName,
-          path: req.file.path,
+          content: pdfBuffer,
           contentType: 'application/pdf',
         },
       ],

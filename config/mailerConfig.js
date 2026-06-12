@@ -1,53 +1,70 @@
-// Configuration SMTP nodemailer (IONOS).
-// Les credentials sont lus via process.env :
-//   SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SMTP_FROM_NAME
-// Ne JAMAIS committer les valeurs reelles dans le code : elles vivent
-// dans le .env (local + Render env vars en prod).
+// Configuration mailer via Resend (API HTTPS).
 //
-// IMPORTANT : sur Render, le port 465 (SMTPS implicite) est SOUVENT bloque
-// dans certaines regions / plans. Privilegier 587 (STARTTLS) qui est plus
-// largement autorise. Pour IONOS, les 2 ports sont supportes.
+// Pourquoi Resend et plus de SMTP nodemailer ?
+//   Render bloque les ports SMTP sortants (465, 587) sur les plans
+//   gratuits/standards. L'envoi via API HTTPS contourne ce blocage et
+//   est plus fiable.
+//
+// Vars d'env requises :
+//   RESEND_API_KEY    : cle API generee sur resend.com (re_xxxxx)
+//   SMTP_FROM_NAME    : nom affiche en expediteur (ex: "Laboratoire Bioram")
+//   SMTP_USER         : adresse email expediteur (ex: contact@bioram.org)
+//                       /!\ le domaine bioram.org DOIT etre verifie dans
+//                       Resend (DNS SPF/DKIM) sinon les envois echouent.
+//
+// Le module exporte la meme interface qu'avant (fromAddress + sendMail
+// helper) pour minimiser les changements dans le controller.
 
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 
-const port = parseInt(process.env.SMTP_PORT, 10) || 587;
-// Port 465 => SSL implicite (secure: true), 587 => STARTTLS (secure: false)
-const secure = port === 465;
-
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || 'smtp.ionos.fr',
-  port,
-  secure,
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-  // Timeouts explicites : sans ca, nodemailer attend ~2 minutes avant
-  // d'echouer, ce qui fait timeout la requete cote utilisateur.
-  connectionTimeout: 15_000,   // 15s pour ouvrir la connexion TCP
-  greetingTimeout:   10_000,   // 10s pour le banner SMTP
-  socketTimeout:     30_000,   // 30s sur le socket apres connexion
-  // STARTTLS opportuniste si le port n'est pas en SSL implicite.
-  requireTLS: !secure,
-  tls: {
-    // IONOS accepte les TLS modernes ; on ne force pas de min version
-    // mais on garde la verification du certificat (defaut).
-    minVersion: 'TLSv1.2',
-  },
-});
-
-// Verification au demarrage : log le resultat sans bloquer le serveur.
-// Utile pour reperer une mauvaise config plus tot que la 1ere tentative
-// d'envoi reelle.
-transporter
-  .verify()
-  .then(() => console.log('[SMTP] Connexion OK avec', process.env.SMTP_HOST, 'port', port))
-  .catch((err) => console.warn('[SMTP] Echec verify :', err.message));
+const resendClient = new Resend(process.env.RESEND_API_KEY);
 
 const fromAddress = () => {
   const name = process.env.SMTP_FROM_NAME || 'Laboratoire Bioram';
   const email = process.env.SMTP_USER || 'contact@bioram.org';
-  return `"${name}" <${email}>`;
+  return `${name} <${email}>`;
 };
 
-module.exports = { transporter, fromAddress };
+/**
+ * Envoie un email transactionnel via Resend.
+ *
+ * @param {Object} opts
+ * @param {string} opts.to       Adresse destinataire
+ * @param {string} opts.replyTo  Reply-To (optionnel)
+ * @param {string} opts.subject  Sujet du mail
+ * @param {string} opts.text     Corps texte
+ * @param {Array}  opts.attachments  [{ filename, content (Buffer), contentType }]
+ * @returns {Promise<{id: string}>}
+ */
+const sendMail = async ({ to, replyTo, subject, text, attachments }) => {
+  if (!process.env.RESEND_API_KEY) {
+    throw new Error('RESEND_API_KEY manquant (env var)');
+  }
+
+  const result = await resendClient.emails.send({
+    from: fromAddress(),
+    to,
+    reply_to: replyTo,
+    subject,
+    text,
+    attachments: (attachments || []).map((a) => ({
+      filename: a.filename,
+      content: a.content, // Buffer attendu par Resend
+    })),
+  });
+
+  if (result.error) {
+    throw new Error(`Resend: ${result.error.message || JSON.stringify(result.error)}`);
+  }
+  return result.data || result;
+};
+
+// Verification au demarrage : check juste la presence de la cle.
+// La validation reelle se fait au 1er envoi.
+if (process.env.RESEND_API_KEY) {
+  console.log('[Mail] Resend configure (cle presente)');
+} else {
+  console.warn('[Mail] RESEND_API_KEY non defini : les envois echoueront');
+}
+
+module.exports = { sendMail, fromAddress };
