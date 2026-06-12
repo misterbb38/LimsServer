@@ -768,7 +768,7 @@ if (exceptions.compteAddis) {
   if (exceptions.spermogramme) {
     const s = exceptions.spermogramme;
     const defaults = {
-      dureeAbstinence:        { unite: 'jours', reference: '2 - 7' },
+      dureeAbstinence:        { unite: 'jours', reference: '' },
       volume:                 { unite: 'ml',    reference: '> 1,5' },
       ph:                     { unite: '',      reference: '> 7,2' },
       numeration:             { unite: '/ml',   reference: '>= 16 000 000' },
