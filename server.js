@@ -43,6 +43,7 @@ const smsRoutes = require('./routes/smsRoutes');
 const calculerNfsRoutes = require('./routes/calculer-nfsRoutes')
 const pdfRoutes = require('./routes/pdfRoutes');
 const reportTemplateRoutes = require('./routes/reportTemplateRoutes'); // ← AJOUTEZ CETTE LIGNE
+const shareResultatRoutes = require('./routes/shareResultatRoutes');
 
 
 
@@ -65,6 +66,7 @@ app.use('/uploads', express.static('uploads'));
 app.use('/api/calculer-nfs', calculerNfsRoutes)
 app.use('/api/pdf', pdfRoutes);
 app.use('/api/report-templates', reportTemplateRoutes); // ← AJOUTEZ CETTE LIGNE
+app.use('/api/share-resultat', shareResultatRoutes); // Upload PDF pour partage WhatsApp/email
 // 3. AJOUTEZ cette route de test (optionnel, pour vérifier que ça marche)
 app.get('/api/test-pdf', (req, res) => {
   res.json({
