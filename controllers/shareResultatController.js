@@ -1,13 +1,13 @@
-// Upload temporaire d'un PDF de resultat sur Cloudinary pour le partage
-// (WhatsApp, email patient/docteur/partenaire). Le fichier est uploade
-// dans le dossier "resultats-partages" avec une nomenclature lisible
-// pour suivi.
+// Partage d'un PDF de resultat.
+//   - WhatsApp : upload sur Cloudinary -> renvoie URL publique (cote front,
+//                ouverture de wa.me avec lien pre-rempli).
+//   - Email    : envoi direct via SMTP IONOS, PDF en piece jointe.
 //
-// Pas d'enregistrement en base : c'est juste un upload d'un PDF deja
-// genere cote client, qu'on veut rendre accessible via une URL publique.
+// Pas d'enregistrement en base : these are one-shot operations.
 
 const asyncHandler = require('express-async-handler');
 const cloudinary = require('../config/cloudinaryConfig');
+const { transporter, fromAddress } = require('../config/mailerConfig');
 const fs = require('fs');
 
 exports.uploadResultatPdf = asyncHandler(async (req, res) => {
@@ -47,5 +47,55 @@ exports.uploadResultatPdf = asyncHandler(async (req, res) => {
     console.error('Erreur upload PDF partage:', error);
     res.status(500);
     throw new Error("Échec de l'upload du PDF vers Cloudinary");
+  }
+});
+
+// Envoi direct par email avec le PDF en piece jointe.
+// Body attendu (multipart/form-data) :
+//   - pdf      : fichier (multer)
+//   - to       : adresse destinataire
+//   - subject  : sujet du mail
+//   - body     : corps texte
+//   - identifiant : optionnel, sert pour nommer la piece jointe
+exports.sendResultatByEmail = asyncHandler(async (req, res) => {
+  if (!req.file) {
+    res.status(400);
+    throw new Error('Aucun fichier PDF reçu');
+  }
+  const { to, subject, body, identifiant } = req.body;
+  if (!to || !to.includes('@')) {
+    if (req.file.path) fs.unlink(req.file.path, () => {});
+    res.status(400);
+    throw new Error('Adresse email destinataire invalide');
+  }
+
+  const attachmentName = identifiant
+    ? `resultat-${identifiant}.pdf`
+    : `resultat.pdf`;
+  const replyTo = process.env.SMTP_USER || 'contact@bioram.org';
+
+  try {
+    await transporter.sendMail({
+      from: fromAddress(),
+      to,
+      replyTo,
+      subject: subject || `Résultats d'analyses - Laboratoire Bioram`,
+      text: body || 'Veuillez trouver vos résultats en pièce jointe.',
+      attachments: [
+        {
+          filename: attachmentName,
+          path: req.file.path,
+          contentType: 'application/pdf',
+        },
+      ],
+    });
+
+    fs.unlink(req.file.path, () => {});
+    res.status(200).json({ success: true });
+  } catch (error) {
+    if (req.file && req.file.path) fs.unlink(req.file.path, () => {});
+    console.error('Erreur envoi email:', error);
+    res.status(500);
+    throw new Error("Échec de l'envoi du mail : " + error.message);
   }
 });
