@@ -3,14 +3,20 @@
 const mongoose = require('mongoose');
 
 // Définition du sous-schéma pour les interprétations
+//
+// Trois types possibles :
+//   - 'text'  : content est une string (paragraphe d'explication)
+//   - 'table' : content est { columns: [], rows: [] } (grille de seuils)
+//   - 'mixed' : content est { text: string, columns: [], rows: [] }
+//               affiche texte ET tableau ensemble dans la meme interpretation
 const interpretationSchema = new mongoose.Schema({
     type: {
         type: String,
-        enum: ['text', 'table'],
+        enum: ['text', 'table', 'mixed'],
         required: true
     },
     content: {
-        type: mongoose.Schema.Types.Mixed, // Cela permet de stocker différents types de données (texte ou tableau)
+        type: mongoose.Schema.Types.Mixed,
         required: true
     }
 });
