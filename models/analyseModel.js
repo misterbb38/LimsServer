@@ -80,6 +80,17 @@ const AnalyseSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Partenaire',
         required: false
+        // Reservee a assurance / ipm / sococim (entites facturees,
+        // avec pourcentage de couverture). Les cliniques partenaires
+        // utilisent cliniquePartenaireId.
+    },
+    cliniquePartenaireId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Partenaire',
+        required: false
+        // Reservee aux cliniques partenaires (entites qui referencent
+        // le patient pour reception directe des resultats, pas de
+        // facturation specifique). Peut coexister avec partenaireId.
     },
     pc1: {
         type: Number,

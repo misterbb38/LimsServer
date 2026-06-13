@@ -6,13 +6,14 @@ const upload = multer({ dest: 'uploads/' });
 
 // Créer un nouveau partenaire
 exports.createPartenaire = asyncHandler(async (req, res) => {
-    const { nom, telephone, typePartenaire } = req.body;
+    const { nom, telephone, typePartenaire, nip } = req.body;
     const partenaire = await Partenaire.create({
         nom,
         typePartenaire,
         telephone,
-
-
+        // NIP : seulement pour les cliniques partenaires (acces au
+        // dashboard). On le laisse non-defini si non fourni.
+        ...(nip ? { nip } : {}),
     });
     res.status(201).json({
         success: true,

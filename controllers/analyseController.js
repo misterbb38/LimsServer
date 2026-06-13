@@ -21,7 +21,7 @@ cloudinary.config({
 
 
 exports.createAnalyse = asyncHandler(async (req, res) => {
-    const { userId, userOwn, tests, typeAnalyse, partenaireId, statusPayement, avance = 0, pourcentageCouverture = 0, reduction = 0, typeReduction, pc1 = 0, pc2 = 0, deplacement = 0, dateDeRecuperation } = req.body;
+    const { userId, userOwn, tests, typeAnalyse, partenaireId, cliniquePartenaireId, statusPayement, avance = 0, pourcentageCouverture = 0, reduction = 0, typeReduction, pc1 = 0, pc2 = 0, deplacement = 0, dateDeRecuperation } = req.body;
 
     let ordonnancePdfPath = null;
     if (req.file) {
@@ -100,6 +100,7 @@ exports.createAnalyse = asyncHandler(async (req, res) => {
       typeAnalyse,
       identifiant,
       partenaireId: partenaireId || undefined,
+      cliniquePartenaireId: cliniquePartenaireId || undefined,
       statusPayement,
       avance,
       prixTotal,
@@ -149,6 +150,7 @@ exports.getAnalyses = asyncHandler(async (req, res) => {
         .populate('userId', 'nom prenom email adresse  smsCount telephone dateNaissance age nip createdAt updatedAt sexe') // Inclure createdAt et updatedAt
         .populate('tests', 'nom description categories machineA machineB valeurMachineA valeurMachineB interpretationA interpretationB prixAssurance prixPaf prixSococim  prixClinique prixIpm coeficiantB  montantRecus') // Inclure createdAt et updatedAt
         .populate('partenaireId', 'nom typePartenaire')
+        .populate('cliniquePartenaireId', 'nom typePartenaire telephone')
         .populate({
             path: 'historiques',
             select: 'status description date createdAt updatedAt', // Inclure createdAt et updatedAt pour historiques
@@ -208,6 +210,7 @@ exports.getAnalysesPatient = asyncHandler(async (req, res) => {
         .populate('userId', 'nom prenom email adresse  telephone dateNaissance age nip createdAt updatedAt sexe') // Inclure createdAt et updatedAt
         .populate('tests', 'nom description categories machineA machineB valeurMachineA valeurMachineB interpretationA interpretationB prixAssurance prixPaf prixIpm prixSococim  prixClinique coeficiantB  montantRecus') // Inclure createdAt et updatedAt
         .populate('partenaireId', 'nom typePartenaire')
+        .populate('cliniquePartenaireId', 'nom typePartenaire telephone')
         .populate({
             path: 'historiques',
             select: 'status description date createdAt updatedAt', // Inclure createdAt et updatedAt pour historiques
@@ -279,6 +282,7 @@ exports.getAnalysesClinique = asyncHandler(async (req, res) => {
         .populate('userId', 'nom prenom email adresse  smsCount telephone dateNaissance age nip createdAt updatedAt sexe')
         .populate('tests', 'nom description categories machineA machineB valeurMachineA valeurMachineB interpretationA interpretationB prixAssurance prixPaf prixIpm prixSococim  prixClinique coeficiantB montantRecus')
         .populate('partenaireId', 'nom typePartenaire')
+        .populate('cliniquePartenaireId', 'nom typePartenaire telephone')
         .populate({
             path: 'historiques',
             select: 'status description date createdAt updatedAt',
@@ -324,6 +328,7 @@ exports.getAnalyse = asyncHandler(async (req, res) => {
         .populate('userId', 'nom prenom email  smsCount adresse dateNaissance age nip telephone createdAt updatedAt sexe ')
         .populate('tests', 'nom description categories machineA machineB machineA machineB valeurMachineA valeurMachineB interpretationA interpretationB prixSococime prixAssurance prixPaf prixIpm prixClinique coeficiantB  montantRecus categorie')
         .populate('partenaireId', 'nom typePartenaire')
+        .populate('cliniquePartenaireId', 'nom typePartenaire telephone')
         .populate({
             path: 'historiques',
             select: 'status description date createdAt updatedAt', // Inclure createdAt et updatedAt pour historiques
@@ -512,7 +517,7 @@ exports.getAnalyse = asyncHandler(async (req, res) => {
 
 
 exports.updateAnalyse = asyncHandler(async (req, res) => {
-    const { userOwn, tests, typeAnalyse, partenaireId, statusPayement, avance = 0, pourcentageCouverture = 0, reduction = 0, typeReduction, pc1 = 0, pc2 = 0, deplacement = 0, dateDeRecuperation } = req.body;
+    const { userOwn, tests, typeAnalyse, partenaireId, cliniquePartenaireId, statusPayement, avance = 0, pourcentageCouverture = 0, reduction = 0, typeReduction, pc1 = 0, pc2 = 0, deplacement = 0, dateDeRecuperation } = req.body;
 
     let ordonnancePdfPath = null;
     if (req.file) {
@@ -528,6 +533,13 @@ exports.updateAnalyse = asyncHandler(async (req, res) => {
     let analyse = await Analyse.findById(req.params.id);
     if (!analyse) {
         return res.status(404).send('Analyse non trouvée');
+    }
+
+    // Clinique partenaire = informationnel (pas d'effet sur le calcul
+    // des prix). On le met a jour si fourni, ou on le retire si une
+    // chaine vide est explicitement envoyee.
+    if (cliniquePartenaireId !== undefined) {
+        analyse.cliniquePartenaireId = cliniquePartenaireId || undefined;
     }
 
     let prixTotal = 0;
