@@ -669,8 +669,10 @@ const findMatch = (testName) => {
   }
 
   console.log('--- Connexion MongoDB...')
-  await mongoose.connect(process.env.MONGO_URI)
-  console.log('--- Connexion OK')
+  // IMPORTANT : la base est nommee "lims" cote app principal (cf config/db.js).
+  // La MONGO_URI ne contient pas de dbName -> il faut le forcer ici.
+  await mongoose.connect(process.env.MONGO_URI, { dbName: 'lims' })
+  console.log(`--- Connexion OK sur DB: ${mongoose.connection.name}`)
 
   const tests = await Test.find({}).lean()
   console.log(`--- ${tests.length} tests trouves`)
