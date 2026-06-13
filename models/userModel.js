@@ -78,7 +78,14 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: "blue",
   },
-  
+  // Titres / qualifications du validateur (medecin, biologiste...) qui
+  // s'affichent sous son nom dans le PDF de resultat quand il valide.
+  // Format multi-ligne (\n) : ex. "Pharmacien - Biologiste\nAncien
+  // Interne des Hôpitaux".
+  profil: {
+    type: String,
+    default: '',
+  },
 }, { timestamps: true });
 
 // Hook pour hasher le mot de passe avant de sauvegarder l'utilisateur

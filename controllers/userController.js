@@ -127,9 +127,14 @@ exports.getProfile = asyncHandler(async (req, res) => {
       email: user.email,
       adresse: user.adresse,
       telephone: user.telephone,
-      adresse: user.adresse,
       userType: user.userType,
-      logo: user.logo
+      logo: user.logo,
+      nomEntreprise: user.nomEntreprise,
+      couleur: user.couleur,
+      devise: user.devise,
+      site: user.site,
+      // Titres affiches sous le nom du validateur dans le PDF
+      profil: user.profil,
     });
   } else {
     res.status(404);
@@ -262,6 +267,9 @@ exports.updateProfileUser = asyncHandler(async (req, res) => {
     user.userType = req.body.userType || user.userType;
     user.devise = req.body.devise || user.devise;
     user.couleur = req.body.couleur || user.couleur;
+    // Titres / qualifications affichees sous le nom dans le PDF.
+    // On accepte la chaine vide pour permettre de vider le champ.
+    if (req.body.profil !== undefined) user.profil = req.body.profil;
 
     if (req.file) {
       const result = await cloudinary.uploader.upload(req.file.path, {
@@ -290,6 +298,10 @@ exports.updateProfileUser = asyncHandler(async (req, res) => {
       userType: updatedUser.userType,
       logo: updatedUser.logo,
       devise: updatedUser.devise,
+      nomEntreprise: updatedUser.nomEntreprise,
+      couleur: updatedUser.couleur,
+      site: updatedUser.site,
+      profil: updatedUser.profil,
       token: generateToken(updatedUser._id),
     });
   } else {

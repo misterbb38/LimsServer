@@ -154,7 +154,7 @@ exports.getAnalyses = asyncHandler(async (req, res) => {
             select: 'status description date createdAt updatedAt', // Inclure createdAt et updatedAt pour historiques
             populate: {
                 path: 'updatedBy',
-                select: 'nom prenom logo createdAt updatedAt' // Inclure createdAt et updatedAt pour updatedBy
+                select: 'nom prenom logo profil createdAt updatedAt' // Inclure createdAt et updatedAt pour updatedBy
             },
 
         })
@@ -213,7 +213,7 @@ exports.getAnalysesPatient = asyncHandler(async (req, res) => {
             select: 'status description date createdAt updatedAt', // Inclure createdAt et updatedAt pour historiques
             populate: {
                 path: 'updatedBy',
-                select: 'nom prenom logo createdAt updatedAt' // Inclure createdAt et updatedAt pour updatedBy
+                select: 'nom prenom logo profil createdAt updatedAt' // Inclure createdAt et updatedAt pour updatedBy
             },
 
         })
@@ -284,7 +284,7 @@ exports.getAnalysesClinique = asyncHandler(async (req, res) => {
             select: 'status description date createdAt updatedAt',
             populate: {
                 path: 'updatedBy',
-                select: 'nom prenom logo createdAt updatedAt'
+                select: 'nom prenom logo profil createdAt updatedAt'
             }
         })
         .populate({
@@ -329,7 +329,7 @@ exports.getAnalyse = asyncHandler(async (req, res) => {
             select: 'status description date createdAt updatedAt', // Inclure createdAt et updatedAt pour historiques
             populate: {
                 path: 'updatedBy',
-                select: 'nom prenom logo createdAt updatedAt' // Inclure createdAt et updatedAt pour updatedBy
+                select: 'nom prenom logo profil createdAt updatedAt' // Inclure createdAt et updatedAt pour updatedBy
             },
 
         })
