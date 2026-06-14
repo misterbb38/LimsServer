@@ -50,6 +50,7 @@ const pdfRoutes = require('./routes/pdfRoutes');
 const reportTemplateRoutes = require('./routes/reportTemplateRoutes'); // ← AJOUTEZ CETTE LIGNE
 const shareResultatRoutes = require('./routes/shareResultatRoutes');
 const logRoutes = require('./routes/logRoutes');
+const demandePayementRoutes = require('./routes/demandePayementRoutes');
 
 
 
@@ -74,6 +75,7 @@ app.use('/api/pdf', pdfRoutes);
 app.use('/api/report-templates', reportTemplateRoutes); // ← AJOUTEZ CETTE LIGNE
 app.use('/api/share-resultat', shareResultatRoutes); // Upload PDF pour partage WhatsApp/email
 app.use('/api/log', logRoutes); // Journal d'audit des actions utilisateurs
+app.use('/api/demande-payement', demandePayementRoutes); // Demandes de paiement partenaires
 // 3. AJOUTEZ cette route de test (optionnel, pour vérifier que ça marche)
 app.get('/api/test-pdf', (req, res) => {
   res.json({
