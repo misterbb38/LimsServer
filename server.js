@@ -29,6 +29,11 @@ if (process.env.NODE_ENV === 'development') {
     app.use(morgan('dev'));
 }
 
+// Audit log : trace toutes les actions POST/PUT/PATCH/DELETE sur /api/*
+// dans la collection 'logs' pour visualisation dans la page Logs.
+const auditLog = require('./middleware/auditLog');
+app.use(auditLog);
+
 // Routes
 const historique = require('./routes/historiqueRoutes');
 const analyse = require('./routes/analyseRoutes');
@@ -44,6 +49,7 @@ const calculerNfsRoutes = require('./routes/calculer-nfsRoutes')
 const pdfRoutes = require('./routes/pdfRoutes');
 const reportTemplateRoutes = require('./routes/reportTemplateRoutes'); // ← AJOUTEZ CETTE LIGNE
 const shareResultatRoutes = require('./routes/shareResultatRoutes');
+const logRoutes = require('./routes/logRoutes');
 
 
 
@@ -67,6 +73,7 @@ app.use('/api/calculer-nfs', calculerNfsRoutes)
 app.use('/api/pdf', pdfRoutes);
 app.use('/api/report-templates', reportTemplateRoutes); // ← AJOUTEZ CETTE LIGNE
 app.use('/api/share-resultat', shareResultatRoutes); // Upload PDF pour partage WhatsApp/email
+app.use('/api/log', logRoutes); // Journal d'audit des actions utilisateurs
 // 3. AJOUTEZ cette route de test (optionnel, pour vérifier que ça marche)
 app.get('/api/test-pdf', (req, res) => {
   res.json({
