@@ -21,7 +21,22 @@ cloudinary.config({
 
 
 exports.createAnalyse = asyncHandler(async (req, res) => {
-    const { userId, userOwn, tests, typeAnalyse, partenaireId, cliniquePartenaireId, statusPayement, avance = 0, pourcentageCouverture = 0, reduction = 0, typeReduction, pc1 = 0, pc2 = 0, deplacement = 0, dateDeRecuperation } = req.body;
+    const { userId, userOwn, tests, typeAnalyse, partenaireId, cliniquePartenaireId, statusPayement, avance = 0, pourcentageCouverture = 0, reduction = 0, typeReduction, pc1 = 0, pc2 = 0, deplacement = 0, dateDeRecuperation, paiements } = req.body;
+
+    // Parsing du tableau paiements (peut arriver en string JSON via FormData).
+    // Si paiements est fourni et non vide, on recalcule l'avance comme la
+    // somme des montants des lignes (les modes detaillent juste COMMENT
+    // l'avance a ete reglee).
+    let paiementsArr = paiements;
+    if (typeof paiementsArr === 'string') {
+        try { paiementsArr = JSON.parse(paiementsArr); } catch (_) { paiementsArr = []; }
+    }
+    let avanceCalcule = Number(avance) || 0;
+    if (Array.isArray(paiementsArr) && paiementsArr.length > 0) {
+        avanceCalcule = paiementsArr.reduce(
+            (s, p) => s + (Number(p?.montant) || 0), 0
+        );
+    }
 
     let ordonnancePdfPath = null;
     if (req.file) {
@@ -90,8 +105,17 @@ exports.createAnalyse = asyncHandler(async (req, res) => {
       }
     }
 
-    // Calcul du reliquat
-    const reliquat = prixPatient - avance;
+    // Calcul du reliquat (utilise avanceCalcule qui prend en compte
+    // les paiements multi-modes si fournis).
+    const reliquat = prixPatient - avanceCalcule;
+
+    // Statut paiement AUTOMATIQUE en fonction de la part patient.
+    // Le client ne peut plus le forcer manuellement : la verite vient
+    // de la comparaison entre paiements recus et prixPatient.
+    let statusPayementCalcule;
+    if (avanceCalcule <= 0) statusPayementCalcule = 'Impayée';
+    else if (avanceCalcule >= prixPatient) statusPayementCalcule = 'Payée';
+    else statusPayementCalcule = 'Reliquat';
 
     // Création de l'analyse
     const nouvelleAnalyse = await Analyse.create({
@@ -101,8 +125,8 @@ exports.createAnalyse = asyncHandler(async (req, res) => {
       identifiant,
       partenaireId: partenaireId || undefined,
       cliniquePartenaireId: cliniquePartenaireId || undefined,
-      statusPayement,
-      avance,
+      statusPayement: statusPayementCalcule,
+      avance: avanceCalcule,
       prixTotal,
       prixPartenaire,
       prixPatient,
@@ -114,6 +138,7 @@ exports.createAnalyse = asyncHandler(async (req, res) => {
       dateDeRecuperation,
       ordonnancePdf: ordonnancePdfPath,
       reliquat,
+      paiements: Array.isArray(paiementsArr) ? paiementsArr : [],
     });
 
     // Création d'une étiquette partenaire si nécessaire
@@ -517,7 +542,20 @@ exports.getAnalyse = asyncHandler(async (req, res) => {
 
 
 exports.updateAnalyse = asyncHandler(async (req, res) => {
-    const { userOwn, tests, typeAnalyse, partenaireId, cliniquePartenaireId, statusPayement, avance = 0, pourcentageCouverture = 0, reduction = 0, typeReduction, pc1 = 0, pc2 = 0, deplacement = 0, dateDeRecuperation } = req.body;
+    const { userOwn, tests, typeAnalyse, partenaireId, cliniquePartenaireId, statusPayement, avance = 0, pourcentageCouverture = 0, reduction = 0, typeReduction, pc1 = 0, pc2 = 0, deplacement = 0, dateDeRecuperation, paiements } = req.body;
+
+    // Parsing identique a create : si paiements fournis, ils sont la
+    // source de verite pour le calcul de l'avance.
+    let paiementsArr = paiements;
+    if (typeof paiementsArr === 'string') {
+        try { paiementsArr = JSON.parse(paiementsArr); } catch (_) { paiementsArr = undefined; }
+    }
+    let avanceCalcule = Number(avance) || 0;
+    if (Array.isArray(paiementsArr) && paiementsArr.length > 0) {
+        avanceCalcule = paiementsArr.reduce(
+            (s, p) => s + (Number(p?.montant) || 0), 0
+        );
+    }
 
     let ordonnancePdfPath = null;
     if (req.file) {
@@ -605,9 +643,9 @@ exports.updateAnalyse = asyncHandler(async (req, res) => {
     if (ordonnancePdfPath) {
         analyse.ordonnancePdf = ordonnancePdfPath;
     }
-    if (statusPayement) {
-        analyse.statusPayement = statusPayement;
-    }
+    // Statut paiement : ignore la valeur du body, recalcule a partir
+    // de avanceCalcule vs prixPatient (cf. plus bas, apres les
+    // updates de prix).
     if(typeAnalyse){
         analyse.typeAnalyse = typeAnalyse;
     }
@@ -621,8 +659,15 @@ exports.updateAnalyse = asyncHandler(async (req, res) => {
         analyse.dateDeRecuperation = new Date(dateDeRecuperation);
     }
 
-    // Calcul du reliquat
-    const reliquat = prixPatient - avance;
+    // Calcul du reliquat (avanceCalcule prend en compte les paiements
+    // multi-modes s'ils sont fournis ; sinon retombe sur req.body.avance).
+    const reliquat = prixPatient - avanceCalcule;
+
+    // Statut paiement AUTOMATIQUE (comme dans createAnalyse).
+    let statusPayementCalcule;
+    if (avanceCalcule <= 0) statusPayementCalcule = 'Impayée';
+    else if (avanceCalcule >= prixPatient) statusPayementCalcule = 'Payée';
+    else statusPayementCalcule = 'Reliquat';
 
     analyse.tests = testsDetails.map(test => test._id); // Mise à jour des tests
     analyse.prixTotal = prixTotal;
@@ -630,8 +675,14 @@ exports.updateAnalyse = asyncHandler(async (req, res) => {
     analyse.prixPatient = prixPatient;
     analyse.reduction = reduction;
     analyse.typeReduction = typeReduction;
-    analyse.avance = avance;
+    analyse.avance = avanceCalcule;
     analyse.reliquat = reliquat;
+    analyse.statusPayement = statusPayementCalcule;
+    // Mise a jour du detail paiements seulement si le client envoie
+    // explicitement le tableau (undefined = pas de modification).
+    if (paiementsArr !== undefined) {
+        analyse.paiements = Array.isArray(paiementsArr) ? paiementsArr : [];
+    }
 
     await analyse.save();
 

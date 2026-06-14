@@ -133,6 +133,20 @@ const AnalyseSchema = new mongoose.Schema({
         type: Number,
         default: 0,
       },
+    // Detail des paiements effectues par le patient. Un meme patient
+    // peut splitter son paiement entre plusieurs modes (ex: 30000 en
+    // especes + 20000 en wave). La somme des paiements.montant est
+    // egale au champ 'avance' (calcul automatique cote controller
+    // quand le tableau paiements est fourni).
+    paiements: [{
+        mode: {
+            type: String,
+            enum: ['Espèces', 'Wave', 'Orange money', 'Carte bancaire'],
+            required: true,
+        },
+        montant: { type: Number, required: true, min: 0 },
+        date: { type: Date, default: Date.now },
+    }],
 }, { timestamps: true });
 
 // Middleware pour recalculer montantRecus, avance, et reliquat avant de sauvegarder un document

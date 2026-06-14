@@ -321,6 +321,8 @@ exports.getEtiquettesByPartenaire = asyncHandler(async (req, res) => {
                     $push: {
                         _id: "$_id",
                         sommeAPayer: "$sommeAPayer",
+                        statusPayement: "$statusPayement",
+                        datePayement: "$datePayement",
                         createdAt: "$createdAt",
                         pourcentageCouverture: "$analyseDetails.pourcentageCouverture", // Ajouter ce champ
                         analyse: {
