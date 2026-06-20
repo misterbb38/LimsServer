@@ -55,8 +55,14 @@ exports.createAnalyse = asyncHandler(async (req, res) => {
 
     const identifiant = await getNextId('analyseId'); // Générer l'identifiant
 
+    // Deduplication : un meme test ne doit jamais apparaitre 2 fois
+    // dans une analyse (filet de securite cote serveur).
+    const testsArr = Array.isArray(tests)
+        ? Array.from(new Set(tests.map(String)))
+        : tests;
+
     // Récupérer les détails des tests
-    const testsDetails = await Test.find({ '_id': { $in: tests } });
+    const testsDetails = await Test.find({ '_id': { $in: testsArr } });
 
     // Vérifier si un partenaire est choisi
     let typePartenaire = null;
@@ -601,7 +607,12 @@ exports.updateAnalyse = asyncHandler(async (req, res) => {
         }
     }
 
-    const testsDetails = tests ? await Test.find({ '_id': { $in: tests } }) : analyse.tests;
+    // Deduplication des tests envoyes (filet de securite serveur :
+    // un meme test ne doit jamais apparaitre 2 fois dans une analyse).
+    const testsArr = Array.isArray(tests)
+        ? Array.from(new Set(tests.map(String)))
+        : tests;
+    const testsDetails = testsArr ? await Test.find({ '_id': { $in: testsArr } }) : analyse.tests;
     testsDetails.forEach(test => {
         if (typePartenaire === 'assurance') {
             prixTotal += test.coeficiantB * test.prixAssurance;

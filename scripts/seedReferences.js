@@ -2228,15 +2228,43 @@ const REFS = {
   },
   'hbs ag': {
     machineA: 'Minividas', machineB: 'Maglumi',
-    valeurMachineA: 'Négatif : < 1,0 index/mL', valeurMachineB: 'Négatif : < 1,0 index/mL',
-    interpretationA: texte('Un antigène HBs inférieur à 1,0 index/mL est considéré comme négatif et traduit l\'absence d\'infection active par le VHB.'),
-    interpretationB: texte('Un antigène HBs inférieur à 1,0 index/mL est considéré comme négatif et traduit l\'absence d\'infection active par le VHB.'),
+    valeurMachineA: '', valeurMachineB: '',
+    interpretationA: mixte(
+      ['Seuil (index/mL)', 'Interprétation'],
+      [
+        ['< 1,0', 'Négatif - Pas d\'infection active'],
+        ['≥ 1,0', 'Positif - Infection VHB active'],
+      ],
+      "Un antigène HBs inférieur à 1,0 index/mL est négatif et traduit l'absence d'infection active par le VHB. Un taux supérieur ou égal à 1,0 index/mL est positif et signe une infection active par le virus de l'hépatite B (aiguë ou chronique)."
+    ),
+    interpretationB: mixte(
+      ['Seuil (index/mL)', 'Interprétation'],
+      [
+        ['< 1,0', 'Négatif - Pas d\'infection active'],
+        ['≥ 1,0', 'Positif - Infection VHB active'],
+      ],
+      "Un antigène HBs inférieur à 1,0 index/mL est négatif et traduit l'absence d'infection active par le VHB. Un taux supérieur ou égal à 1,0 index/mL est positif et signe une infection active par le virus de l'hépatite B (aiguë ou chronique)."
+    ),
   },
   'antigene hbs': {
     machineA: 'Minividas', machineB: 'Maglumi',
-    valeurMachineA: 'Négatif : < 1,0 index/mL', valeurMachineB: 'Négatif : < 1,0 index/mL',
-    interpretationA: texte('Un antigène HBs inférieur à 1,0 index/mL est considéré comme négatif et traduit l\'absence d\'infection active par le VHB.'),
-    interpretationB: texte('Un antigène HBs inférieur à 1,0 index/mL est considéré comme négatif et traduit l\'absence d\'infection active par le VHB.'),
+    valeurMachineA: '', valeurMachineB: '',
+    interpretationA: mixte(
+      ['Seuil (index/mL)', 'Interprétation'],
+      [
+        ['< 1,0', 'Négatif - Pas d\'infection active'],
+        ['≥ 1,0', 'Positif - Infection VHB active'],
+      ],
+      "Un antigène HBs inférieur à 1,0 index/mL est négatif et traduit l'absence d'infection active par le VHB. Un taux supérieur ou égal à 1,0 index/mL est positif et signe une infection active par le virus de l'hépatite B (aiguë ou chronique)."
+    ),
+    interpretationB: mixte(
+      ['Seuil (index/mL)', 'Interprétation'],
+      [
+        ['< 1,0', 'Négatif - Pas d\'infection active'],
+        ['≥ 1,0', 'Positif - Infection VHB active'],
+      ],
+      "Un antigène HBs inférieur à 1,0 index/mL est négatif et traduit l'absence d'infection active par le VHB. Un taux supérieur ou égal à 1,0 index/mL est positif et signe une infection active par le virus de l'hépatite B (aiguë ou chronique)."
+    ),
   },
   'hcv': {
     machineA: 'Minividas', machineB: 'Maglumi',
@@ -2290,15 +2318,47 @@ const REFS = {
   },
   'rubeole igg': {
     machineA: 'Minividas', machineB: 'Maglumi',
-    valeurMachineA: '≥ 10 UI/mL : Immunisé', valeurMachineB: '≥ 10 UI/mL : Immunisé',
-    interpretationA: texte('Un taux d\'IgG anti-rubéole supérieur ou égal à 10 UI/mL signe une immunisation.'),
-    interpretationB: texte('Un taux d\'IgG anti-rubéole supérieur ou égal à 10 UI/mL signe une immunisation.'),
+    valeurMachineA: '', valeurMachineB: '',
+    interpretationA: mixte(
+      ['Seuil (UI/mL)', 'Interprétation'],
+      [
+        ['< 10', 'Négatif - Non immunisé'],
+        ['10 - 15', 'Douteux - Contrôle à 3 semaines'],
+        ['> 15', 'Positif - Immunisé'],
+      ],
+      "Un taux d'IgG anti-rubéole inférieur à 10 UI/mL est négatif et traduit l'absence d'immunité. Un résultat compris entre 10 et 15 UI/mL est douteux et impose un contrôle à 3 semaines. Un taux supérieur à 15 UI/mL est positif et signe une immunisation."
+    ),
+    interpretationB: mixte(
+      ['Seuil (UI/mL)', 'Interprétation'],
+      [
+        ['< 10', 'Négatif - Non immunisé'],
+        ['10 - 15', 'Douteux - Contrôle à 3 semaines'],
+        ['> 15', 'Positif - Immunisé'],
+      ],
+      "Un taux d'IgG anti-rubéole inférieur à 10 UI/mL est négatif et traduit l'absence d'immunité. Un résultat compris entre 10 et 15 UI/mL est douteux et impose un contrôle à 3 semaines. Un taux supérieur à 15 UI/mL est positif et signe une immunisation."
+    ),
   },
   'rubeole igm': {
     machineA: 'Minividas', machineB: 'Maglumi',
-    valeurMachineA: 'Négatif', valeurMachineB: 'Négatif',
-    interpretationA: texte('Un résultat négatif traduit l\'absence d\'IgM anti-rubéole, écartant une infection récente.'),
-    interpretationB: texte('Un résultat négatif traduit l\'absence d\'IgM anti-rubéole, écartant une infection récente.'),
+    valeurMachineA: '', valeurMachineB: '',
+    interpretationA: mixte(
+      ['Seuil (index)', 'Interprétation'],
+      [
+        ['< 0,8', 'Négatif - Pas d\'infection récente'],
+        ['0,8 - 1,2', 'Douteux'],
+        ['> 1,2', 'Positif - Infection récente probable'],
+      ],
+      "Un taux d'IgM anti-rubéole inférieur à 0,8 est négatif et écarte une infection récente. Un résultat compris entre 0,8 et 1,2 est douteux. Un taux supérieur à 1,2 est positif et évoque une infection rubéolique récente."
+    ),
+    interpretationB: mixte(
+      ['Seuil (index)', 'Interprétation'],
+      [
+        ['< 0,8', 'Négatif - Pas d\'infection récente'],
+        ['0,8 - 1,2', 'Douteux'],
+        ['> 1,2', 'Positif - Infection récente probable'],
+      ],
+      "Un taux d'IgM anti-rubéole inférieur à 0,8 est négatif et écarte une infection récente. Un résultat compris entre 0,8 et 1,2 est douteux. Un taux supérieur à 1,2 est positif et évoque une infection rubéolique récente."
+    ),
   },
   'cytomegalovirus (igm)': {
     machineA: 'Minividas', machineB: 'Maglumi',
@@ -2328,15 +2388,45 @@ const REFS = {
   },
   'anticorps anti hav igm': {
     machineA: 'Minividas', machineB: 'Maglumi',
-    valeurMachineA: 'Négatif', valeurMachineB: 'Négatif',
-    interpretationA: texte('Un résultat négatif traduit l\'absence d\'IgM anti-VHA, écartant une infection récente par le virus de l\'hépatite A.'),
-    interpretationB: texte('Un résultat négatif traduit l\'absence d\'IgM anti-VHA, écartant une infection récente par le virus de l\'hépatite A.'),
+    valeurMachineA: '', valeurMachineB: '',
+    interpretationA: mixte(
+      ['Seuil (index/COI)', 'Interprétation'],
+      [
+        ['< 0,8', 'Négatif - Pas d\'infection récente'],
+        ['0,8 - 1,2', 'Douteux'],
+        ['≥ 1,2', 'Positif - Hépatite A aiguë'],
+      ],
+      "Un taux d'IgM anti-VHA inférieur à 0,8 est négatif et écarte une infection récente par le virus de l'hépatite A. Un résultat compris entre 0,8 et 1,2 est douteux. Un taux supérieur ou égal à 1,2 est positif et évoque une hépatite A aiguë."
+    ),
+    interpretationB: mixte(
+      ['Seuil (index/COI)', 'Interprétation'],
+      [
+        ['< 0,8', 'Négatif - Pas d\'infection récente'],
+        ['0,8 - 1,2', 'Douteux'],
+        ['≥ 1,2', 'Positif - Hépatite A aiguë'],
+      ],
+      "Un taux d'IgM anti-VHA inférieur à 0,8 est négatif et écarte une infection récente par le virus de l'hépatite A. Un résultat compris entre 0,8 et 1,2 est douteux. Un taux supérieur ou égal à 1,2 est positif et évoque une hépatite A aiguë."
+    ),
   },
   'anticorps anti hav totaux': {
     machineA: 'Minividas', machineB: 'Maglumi',
-    valeurMachineA: 'Négatif', valeurMachineB: 'Négatif',
-    interpretationA: texte('Un résultat négatif traduit l\'absence d\'anticorps totaux anti-VHA, c\'est-à-dire l\'absence d\'immunité.'),
-    interpretationB: texte('Un résultat négatif traduit l\'absence d\'anticorps totaux anti-VHA, c\'est-à-dire l\'absence d\'immunité.'),
+    valeurMachineA: '', valeurMachineB: '',
+    interpretationA: mixte(
+      ['Seuil (mUI/mL)', 'Interprétation'],
+      [
+        ['< 20', 'Négatif - Non immunisé'],
+        ['≥ 20', 'Positif - Immunisé'],
+      ],
+      "Un taux d'anticorps totaux anti-VHA inférieur à 20 mUI/mL est négatif et traduit l'absence d'immunité contre le virus de l'hépatite A. Un taux supérieur ou égal à 20 mUI/mL est positif et signe une immunisation (post-infection ou post-vaccinale)."
+    ),
+    interpretationB: mixte(
+      ['Seuil (mUI/mL)', 'Interprétation'],
+      [
+        ['< 20', 'Négatif - Non immunisé'],
+        ['≥ 20', 'Positif - Immunisé'],
+      ],
+      "Un taux d'anticorps totaux anti-VHA inférieur à 20 mUI/mL est négatif et traduit l'absence d'immunité contre le virus de l'hépatite A. Un taux supérieur ou égal à 20 mUI/mL est positif et signe une immunisation (post-infection ou post-vaccinale)."
+    ),
   },
   'anticorps anti hav igg': {
     machineA: 'Minividas', machineB: 'Maglumi',
@@ -2359,9 +2449,25 @@ const REFS = {
   },
   'anticorps anti hbc igm': {
     machineA: 'Minividas', machineB: 'Maglumi',
-    valeurMachineA: 'Négatif', valeurMachineB: 'Négatif',
-    interpretationA: texte('Un résultat négatif traduit l\'absence d\'IgM anti-HBc, écartant une infection aiguë récente par le VHB.'),
-    interpretationB: texte('Un résultat négatif traduit l\'absence d\'IgM anti-HBc, écartant une infection aiguë récente par le VHB.'),
+    valeurMachineA: '', valeurMachineB: '',
+    interpretationA: mixte(
+      ['Seuil (COI)', 'Interprétation'],
+      [
+        ['< 1,0', 'Négatif - Pas d\'infection aiguë'],
+        ['1,0 - 1,2', 'Douteux'],
+        ['≥ 1,2', 'Positif - Hépatite B aiguë récente'],
+      ],
+      "Un taux d'IgM anti-HBc inférieur à 1,0 COI est négatif et écarte une infection aiguë récente par le VHB. Un résultat compris entre 1,0 et 1,2 COI est douteux. Un taux supérieur ou égal à 1,2 COI est positif et évoque une hépatite B aiguë récente."
+    ),
+    interpretationB: mixte(
+      ['Seuil (COI)', 'Interprétation'],
+      [
+        ['< 1,0', 'Négatif - Pas d\'infection aiguë'],
+        ['1,0 - 1,2', 'Douteux'],
+        ['≥ 1,2', 'Positif - Hépatite B aiguë récente'],
+      ],
+      "Un taux d'IgM anti-HBc inférieur à 1,0 COI est négatif et écarte une infection aiguë récente par le VHB. Un résultat compris entre 1,0 et 1,2 COI est douteux. Un taux supérieur ou égal à 1,2 COI est positif et évoque une hépatite B aiguë récente."
+    ),
   },
   'anticorps anti hbc igg': {
     machineA: 'Minividas', machineB: 'Maglumi',
@@ -2371,21 +2477,63 @@ const REFS = {
   },
   'anticorps anti hbc totaux': {
     machineA: 'Minividas', machineB: 'Maglumi',
-    valeurMachineA: 'Négatif', valeurMachineB: 'Négatif',
-    interpretationA: texte('Un résultat négatif traduit l\'absence d\'anticorps anti-HBc totaux, sans contact antérieur avec le VHB.'),
-    interpretationB: texte('Un résultat négatif traduit l\'absence d\'anticorps anti-HBc totaux, sans contact antérieur avec le VHB.'),
+    valeurMachineA: '', valeurMachineB: '',
+    interpretationA: mixte(
+      ['Seuil (COI)', 'Interprétation'],
+      [
+        ['< 1,0', 'Négatif - Pas de contact avec le VHB'],
+        ['≥ 1,0', 'Positif - Contact ancien ou actif avec le VHB'],
+      ],
+      "Un taux d'anticorps anti-HBc totaux inférieur à 1,0 COI est négatif et écarte tout contact antérieur avec le VHB. Un taux supérieur ou égal à 1,0 COI est positif et signe un contact ancien ou actif avec le virus."
+    ),
+    interpretationB: mixte(
+      ['Seuil (COI)', 'Interprétation'],
+      [
+        ['< 1,0', 'Négatif - Pas de contact avec le VHB'],
+        ['≥ 1,0', 'Positif - Contact ancien ou actif avec le VHB'],
+      ],
+      "Un taux d'anticorps anti-HBc totaux inférieur à 1,0 COI est négatif et écarte tout contact antérieur avec le VHB. Un taux supérieur ou égal à 1,0 COI est positif et signe un contact ancien ou actif avec le virus."
+    ),
   },
   'antigene hbe': {
     machineA: 'Minividas', machineB: 'Maglumi',
-    valeurMachineA: 'Négatif', valeurMachineB: 'Négatif',
-    interpretationA: texte('Un résultat négatif traduit l\'absence de l\'antigène HBe, en faveur d\'une faible réplication virale.'),
-    interpretationB: texte('Un résultat négatif traduit l\'absence de l\'antigène HBe, en faveur d\'une faible réplication virale.'),
+    valeurMachineA: '', valeurMachineB: '',
+    interpretationA: mixte(
+      ['Seuil (COI)', 'Interprétation'],
+      [
+        ['< 1,0', 'Négatif - Faible réplication virale'],
+        ['≥ 1,0', 'Positif - Réplication virale active'],
+      ],
+      "Un antigène HBe inférieur à 1,0 COI est négatif et oriente vers une faible réplication virale (ou une mutation pré-core). Un taux supérieur ou égal à 1,0 COI est positif et signe une réplication virale active du VHB, donc une forte contagiosité."
+    ),
+    interpretationB: mixte(
+      ['Seuil (COI)', 'Interprétation'],
+      [
+        ['< 1,0', 'Négatif - Faible réplication virale'],
+        ['≥ 1,0', 'Positif - Réplication virale active'],
+      ],
+      "Un antigène HBe inférieur à 1,0 COI est négatif et oriente vers une faible réplication virale (ou une mutation pré-core). Un taux supérieur ou égal à 1,0 COI est positif et signe une réplication virale active du VHB, donc une forte contagiosité."
+    ),
   },
   'anticorps anti hbe': {
     machineA: 'Minividas', machineB: 'Maglumi',
-    valeurMachineA: 'Négatif', valeurMachineB: 'Négatif',
-    interpretationA: texte('Un résultat négatif traduit l\'absence d\'anticorps anti-HBe.'),
-    interpretationB: texte('Un résultat négatif traduit l\'absence d\'anticorps anti-HBe.'),
+    valeurMachineA: '', valeurMachineB: '',
+    interpretationA: mixte(
+      ['Seuil (COI)', 'Interprétation'],
+      [
+        ['< 1,0', 'Négatif - Réplication virale possible'],
+        ['≥ 1,0', 'Positif - Séroconversion / faible réplication'],
+      ],
+      "Un taux d'anticorps anti-HBe inférieur à 1,0 COI est négatif et peut traduire une réplication virale persistante. Un taux supérieur ou égal à 1,0 COI est positif et signe une séroconversion HBe, généralement associée à une faible réplication virale."
+    ),
+    interpretationB: mixte(
+      ['Seuil (COI)', 'Interprétation'],
+      [
+        ['< 1,0', 'Négatif - Réplication virale possible'],
+        ['≥ 1,0', 'Positif - Séroconversion / faible réplication'],
+      ],
+      "Un taux d'anticorps anti-HBe inférieur à 1,0 COI est négatif et peut traduire une réplication virale persistante. Un taux supérieur ou égal à 1,0 COI est positif et signe une séroconversion HBe, généralement associée à une faible réplication virale."
+    ),
   },
   'anticorps anti-hepatite delta': {
     machineA: 'Minividas', machineB: 'Maglumi',
