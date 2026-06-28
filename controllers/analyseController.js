@@ -785,8 +785,11 @@ exports.getTestIdsByAnalyse = asyncHandler(async (req, res) => {
 
     try {
         // Ajoutez les champs 'machineA' et 'machineB' dans le populate pour les récupérer
+        // On inclut aussi le type des interpretations (text/table/mixed) pour que
+        // le frontend puisse activer automatiquement le statut d'interpretation
+        // quand le parametre est de type 'mixed' (tableau + texte).
         const analyse = await Analyse.findById(analyseId)
-            .populate('tests', '_id nom machineA machineB conclusions');
+            .populate('tests', '_id nom machineA machineB conclusions interpretationA.type interpretationB.type');
 
         if (!analyse) {
             return res.status(404).json({ success: false, message: 'Analyse not found' });
