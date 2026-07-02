@@ -88,6 +88,14 @@ const userSchema = new mongoose.Schema({
   },
 }, { timestamps: true });
 
+// Index uniques PARTIELS sur email et telephone : l'unicite ne
+// s'applique qu'aux valeurs NON vides. Cela permet d'inscrire des
+// patients sans email/telephone (email/telephone optionnels), tout en
+// gardant l'unicite des vrais emails/telephones. Remplace les anciens
+// index uniques non-sparse qui bloquaient plusieurs valeurs vides.
+userSchema.index({ email: 1 }, { unique: true, partialFilterExpression: { email: { $gt: '' } } });
+userSchema.index({ telephone: 1 }, { unique: true, partialFilterExpression: { telephone: { $gt: '' } } });
+
 // Hook pour hasher le mot de passe avant de sauvegarder l'utilisateur
 userSchema.pre('save', async function (next) {
   if (this.isModified('password')) {

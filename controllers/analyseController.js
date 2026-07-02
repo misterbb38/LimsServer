@@ -21,7 +21,7 @@ cloudinary.config({
 
 
 exports.createAnalyse = asyncHandler(async (req, res) => {
-    const { userId, userOwn, tests, typeAnalyse, partenaireId, cliniquePartenaireId, statusPayement, avance = 0, pourcentageCouverture = 0, reduction = 0, typeReduction, pc1 = 0, pc2 = 0, deplacement = 0, dateDeRecuperation, paiements } = req.body;
+    const { userId, userOwn, tests, typeAnalyse, partenaireId, cliniquePartenaireId, statusPayement, avance = 0, pourcentageCouverture = 0, reduction = 0, typeReduction, pc1 = 0, pc2 = 0, deplacement = 0, dateDeRecuperation, paiements, modeTest, identifiantManuel } = req.body;
 
     // Parsing du tableau paiements (peut arriver en string JSON via FormData).
     // Si paiements est fourni et non vide, on recalcule l'avance comme la
@@ -53,7 +53,21 @@ exports.createAnalyse = asyncHandler(async (req, res) => {
     let prixPartenaire = 0;
     let prixPatient = 0;
 
-    const identifiant = await getNextId('analyseId'); // Générer l'identifiant
+    // Numero d'analyse (dossier) : en MODE TEST, l'utilisateur le saisit
+    // manuellement ; sinon generation automatique. On verifie l'unicite
+    // du numero manuel pour eviter les doublons (le champ est unique).
+    const isModeTest = modeTest === 'true' || modeTest === true;
+    let identifiant;
+    if (isModeTest && identifiantManuel && String(identifiantManuel).trim() !== '') {
+      identifiant = String(identifiantManuel).trim();
+      const identifiantExiste = await Analyse.findOne({ identifiant });
+      if (identifiantExiste) {
+        res.status(400);
+        throw new Error(`Le numéro d'analyse "${identifiant}" existe déjà.`);
+      }
+    } else {
+      identifiant = await getNextId('analyseId'); // Génération automatique
+    }
 
     // Deduplication : un meme test ne doit jamais apparaitre 2 fois
     // dans une analyse (filet de securite cote serveur).

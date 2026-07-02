@@ -32,8 +32,10 @@ const generateToken = (id) => {
 exports.signup = asyncHandler(async (req, res) => {
   const { nom, prenom, email, dateNaissance, password, adresse, telephone, userType, partenaireId, age, sexe } = req.body;
 
-  // Vérifier si l'utilisateur existe déjà
-  const userExists = await User.findOne({ telephone });
+  // Vérifier si l'utilisateur existe déjà (uniquement si un téléphone
+  // est fourni : le téléphone est optionnel, sinon plusieurs patients
+  // sans téléphone declencheraient un faux "existe déjà").
+  const userExists = telephone ? await User.findOne({ telephone }) : null;
   if (userExists) {
     res.status(400);
     throw new Error('Un utilisateur existe déjà avec ce téléphone');
