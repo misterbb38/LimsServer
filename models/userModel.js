@@ -72,7 +72,7 @@ const userSchema = new mongoose.Schema({
   },
   sexe: {
     type: String,
-    enum: ['femme', 'homme']
+    enum: ['femme', 'homme', 'inconnu']
   },
   couleur: {
     type: String,
