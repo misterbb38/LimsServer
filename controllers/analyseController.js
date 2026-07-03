@@ -78,11 +78,19 @@ exports.createAnalyse = asyncHandler(async (req, res) => {
     // Récupérer les détails des tests
     const testsDetails = await Test.find({ '_id': { $in: testsArr } });
 
-    // Vérifier si un partenaire est choisi
+    // Déterminer le type de partenaire qui pilote la TARIFICATION.
+    // Priorité au partenaire assurance/IPM/sococim (partenaireId). Sinon,
+    // si une clinique partenaire est choisie (cliniquePartenaireId de type
+    // 'clinique'), on facture au prixClinique. Auparavant la clinique
+    // n'affectait jamais le prix (l'analyse tombait au tarif PAF).
     let typePartenaire = null;
     if (partenaireId) {
       const partenaire = await Partenaire.findById(partenaireId);
-      typePartenaire = partenaire.typePartenaire;
+      typePartenaire = partenaire?.typePartenaire || null;
+    }
+    if (!typePartenaire && cliniquePartenaireId) {
+      const clinique = await Partenaire.findById(cliniquePartenaireId);
+      if (clinique?.typePartenaire === 'clinique') typePartenaire = 'clinique';
     }
 
     // Calcul du prix total en fonction du type de partenaire
@@ -562,7 +570,7 @@ exports.getAnalyse = asyncHandler(async (req, res) => {
 
 
 exports.updateAnalyse = asyncHandler(async (req, res) => {
-    const { userOwn, tests, typeAnalyse, partenaireId, cliniquePartenaireId, statusPayement, avance = 0, pourcentageCouverture = 0, reduction = 0, typeReduction, pc1 = 0, pc2 = 0, deplacement = 0, dateDeRecuperation, paiements } = req.body;
+    const { userOwn, tests, typeAnalyse, partenaireId, cliniquePartenaireId, statusPayement, avance = 0, pourcentageCouverture = 0, reduction = 0, typeReduction, pc1 = 0, pc2 = 0, deplacement = 0, dateDeRecuperation, paiements, modeTest, identifiantManuel } = req.body;
 
     // Parsing identique a create : si paiements fournis, ils sont la
     // source de verite pour le calcul de l'avance.
@@ -593,9 +601,24 @@ exports.updateAnalyse = asyncHandler(async (req, res) => {
         return res.status(404).send('Analyse non trouvée');
     }
 
-    // Clinique partenaire = informationnel (pas d'effet sur le calcul
-    // des prix). On le met a jour si fourni, ou on le retire si une
-    // chaine vide est explicitement envoyee.
+    // Mode test : mise a jour manuelle du numero d'analyse (identifiant),
+    // avec verification d'unicite (en excluant l'analyse courante).
+    const isModeTest = modeTest === 'true' || modeTest === true;
+    if (isModeTest && identifiantManuel && String(identifiantManuel).trim() !== '') {
+        const nouvelId = String(identifiantManuel).trim();
+        if (nouvelId !== analyse.identifiant) {
+            const existe = await Analyse.findOne({ identifiant: nouvelId, _id: { $ne: analyse._id } });
+            if (existe) {
+                res.status(400);
+                throw new Error(`Le numéro d'analyse "${nouvelId}" existe déjà.`);
+            }
+            analyse.identifiant = nouvelId;
+        }
+    }
+
+    // Clinique partenaire : mise a jour si fourni, ou retire si une chaine
+    // vide est explicitement envoyee. (Affecte aussi la tarification plus
+    // bas : facturation au prixClinique.)
     if (cliniquePartenaireId !== undefined) {
         analyse.cliniquePartenaireId = cliniquePartenaireId || undefined;
     }
@@ -619,6 +642,14 @@ exports.updateAnalyse = asyncHandler(async (req, res) => {
         if (analyse.pourcentageCouverture === 0) {
             analyse.partenaireId = undefined;
         }
+    }
+
+    // Clinique : si aucune assurance/IPM/sococim active mais que l'analyse
+    // est rattachee a une clinique partenaire, facturation au prixClinique
+    // (coherent avec createAnalyse).
+    if (!typePartenaire && analyse.cliniquePartenaireId) {
+        const clinique = await Partenaire.findById(analyse.cliniquePartenaireId);
+        if (clinique?.typePartenaire === 'clinique') typePartenaire = 'clinique';
     }
 
     // Deduplication des tests envoyes (filet de securite serveur :
