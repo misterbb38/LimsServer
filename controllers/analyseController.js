@@ -114,8 +114,10 @@ exports.createAnalyse = asyncHandler(async (req, res) => {
     // Calcul du prix partenaire et du prix patient
     if (typePartenaire) {
         if (typePartenaire === 'clinique') {
+          // Clinique : tout est facture a la clinique, le patient ne paie
+          // rien au guichet.
           prixPartenaire = prixTotal;
-          prixPatient = prixTotal;
+          prixPatient = 0;
         } else {
           prixPartenaire = (prixTotal * pourcentageCouverture) / 100;
           prixPatient = prixTotal - prixPartenaire;
@@ -141,7 +143,8 @@ exports.createAnalyse = asyncHandler(async (req, res) => {
     // Le client ne peut plus le forcer manuellement : la verite vient
     // de la comparaison entre paiements recus et prixPatient.
     let statusPayementCalcule;
-    if (avanceCalcule <= 0) statusPayementCalcule = 'Impayée';
+    if (prixPatient <= 0) statusPayementCalcule = 'Payée'; // rien du a la charge du patient (ex. clinique)
+    else if (avanceCalcule <= 0) statusPayementCalcule = 'Impayée';
     else if (avanceCalcule >= prixPatient) statusPayementCalcule = 'Payée';
     else statusPayementCalcule = 'Reliquat';
 
@@ -682,8 +685,9 @@ exports.updateAnalyse = asyncHandler(async (req, res) => {
     // Calcul du prix partenaire et du prix patient
     if (typePartenaire) {
         if (typePartenaire === 'clinique') {
+            // Clinique : tout facture a la clinique, patient a 0.
             prixPartenaire = prixTotal;
-            prixPatient = prixTotal;
+            prixPatient = 0;
         } else {
             prixPartenaire = (prixTotal * pourcentageCouverture) / 100;
             prixPatient = prixTotal - prixPartenaire;
@@ -725,7 +729,8 @@ exports.updateAnalyse = asyncHandler(async (req, res) => {
 
     // Statut paiement AUTOMATIQUE (comme dans createAnalyse).
     let statusPayementCalcule;
-    if (avanceCalcule <= 0) statusPayementCalcule = 'Impayée';
+    if (prixPatient <= 0) statusPayementCalcule = 'Payée'; // rien du cote patient (ex. clinique)
+    else if (avanceCalcule <= 0) statusPayementCalcule = 'Impayée';
     else if (avanceCalcule >= prixPatient) statusPayementCalcule = 'Payée';
     else statusPayementCalcule = 'Reliquat';
 
