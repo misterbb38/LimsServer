@@ -169,11 +169,15 @@ exports.createAnalyse = asyncHandler(async (req, res) => {
       paiements: Array.isArray(paiementsArr) ? paiementsArr : [],
     });
 
-    // Création d'une étiquette partenaire si nécessaire
-    if (partenaireId && prixPartenaire > 0) {
+    // Étiquette partenaire (facturation) : assurance/ipm/sococim
+    // (partenaireId) OU clinique (cliniquePartenaireId, facturee au
+    // prixClinique). Sans ca, les cliniques n'apparaissaient pas dans la
+    // page Facture(Partenaire).
+    const partenaireFacture = partenaireId || cliniquePartenaireId || null;
+    if (partenaireFacture && prixPartenaire > 0) {
       await EtiquettePartenaire.create({
         analyseId: nouvelleAnalyse._id,
-        partenaireId,
+        partenaireId: partenaireFacture,
         sommeAPayer: prixPartenaire,
       });
     }
@@ -742,22 +746,26 @@ exports.updateAnalyse = asyncHandler(async (req, res) => {
 
     await analyse.save();
 
+    // Partenaire a facturer : assurance/ipm/sococim (partenaireId) OU
+    // clinique (analyse.cliniquePartenaireId). Permet a la clinique
+    // d'apparaitre dans Facture(Partenaire).
+    const partenaireFacture = partenaireId || analyse.cliniquePartenaireId || null;
     let etiquettePartenaire = await EtiquettePartenaire.findOne({ analyseId: analyse._id });
     if (etiquettePartenaire) {
-        if (partenaireId && prixPartenaire > 0) {
+        if (partenaireFacture && prixPartenaire > 0) {
             // Mise à jour de l'étiquette existante même si le partenaire change
-            etiquettePartenaire.partenaireId = partenaireId;
+            etiquettePartenaire.partenaireId = partenaireFacture;
             etiquettePartenaire.sommeAPayer = prixPartenaire;
             await etiquettePartenaire.save();
         } else {
             // Suppression de l'étiquette si l'analyse n'a plus de partenaire
             await EtiquettePartenaire.findByIdAndDelete(etiquettePartenaire._id);
         }
-    } else if (partenaireId) {
-        // Création d'une nouvelle étiquette si elle n'existe pas et qu'un partenaire est défini
+    } else if (partenaireFacture && prixPartenaire > 0) {
+        // Création d'une nouvelle étiquette si elle n'existe pas
         await EtiquettePartenaire.create({
             analyseId: analyse._id,
-            partenaireId,
+            partenaireId: partenaireFacture,
             sommeAPayer: prixPartenaire,
         });
     }
