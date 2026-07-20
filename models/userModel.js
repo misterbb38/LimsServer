@@ -94,7 +94,10 @@ const userSchema = new mongoose.Schema({
 // gardant l'unicite des vrais emails/telephones. Remplace les anciens
 // index uniques non-sparse qui bloquaient plusieurs valeurs vides.
 userSchema.index({ email: 1 }, { unique: true, partialFilterExpression: { email: { $gt: '' } } });
-userSchema.index({ telephone: 1 }, { unique: true, partialFilterExpression: { telephone: { $gt: '' } } });
+// Téléphone NON unique : plusieurs patients peuvent partager le même
+// numéro (avec confirmation à l'inscription). Index simple pour accélérer
+// les recherches par téléphone, sans contrainte d'unicité.
+userSchema.index({ telephone: 1 });
 
 // Hook pour hasher le mot de passe avant de sauvegarder l'utilisateur
 userSchema.pre('save', async function (next) {

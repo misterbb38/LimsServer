@@ -30,15 +30,29 @@ const generateToken = (id) => {
 
 
 exports.signup = asyncHandler(async (req, res) => {
-  const { nom, prenom, email, dateNaissance, password, adresse, telephone, userType, partenaireId, age, sexe } = req.body;
+  const { nom, prenom, email, dateNaissance, password, adresse, telephone, userType, partenaireId, age, sexe, forcePhone } = req.body;
 
-  // Vérifier si l'utilisateur existe déjà (uniquement si un téléphone
-  // est fourni : le téléphone est optionnel, sinon plusieurs patients
-  // sans téléphone declencheraient un faux "existe déjà").
-  const userExists = telephone ? await User.findOne({ telephone }) : null;
-  if (userExists) {
-    res.status(400);
-    throw new Error('Un utilisateur existe déjà avec ce téléphone');
+  // Numéro déjà enregistré : plusieurs patients PEUVENT partager le même
+  // téléphone, mais on demande une confirmation. Si un téléphone est
+  // fourni et déjà présent et que l'utilisateur n'a pas encore confirmé
+  // (forcePhone), on renvoie 409 avec les infos du patient existant pour
+  // afficher un popup côté front. Si forcePhone est vrai, on crée le
+  // doublon sans blocage.
+  if (telephone && !forcePhone) {
+    const existingPhone = await User.findOne({ telephone });
+    if (existingPhone) {
+      const nomComplet = `${existingPhone.prenom || ''} ${existingPhone.nom || ''}`.trim();
+      return res.status(409).json({
+        success: false,
+        phoneExists: true,
+        existingPatient: {
+          nom: existingPhone.nom,
+          prenom: existingPhone.prenom,
+          nip: existingPhone.nip,
+        },
+        message: `Le numéro ${telephone} est déjà enregistré pour ${nomComplet} (NIP ${existingPhone.nip}). Voulez-vous quand même créer ce nouveau patient avec ce numéro ?`,
+      });
+    }
   }
 
   const nip = await getNextNip(); // Générer le NIP
@@ -67,7 +81,7 @@ exports.signup = asyncHandler(async (req, res) => {
       email: user.email,
       adresse: user.adresse,
       telephone: user.telephone,
-      sexe: sexe.telephone,
+      sexe: user.sexe,
       userType: user.userType,
       partenaireId: user.partenaireId, // Inclure le partenaireId dans la réponse
       token: generateToken(user._id), // Envoi du token JWT pour authentification immédiate
