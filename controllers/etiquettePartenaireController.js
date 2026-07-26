@@ -252,7 +252,7 @@ exports.getEtiquettesStats = asyncHandler(async (req, res) => {
 // });
 
 exports.getEtiquettesByPartenaire = asyncHandler(async (req, res) => {
-    const { mois, annee } = req.query;
+    const { mois, annee, dateDebut, dateFin } = req.query;
 
     let matchQuery = {};
 
@@ -266,6 +266,18 @@ exports.getEtiquettesByPartenaire = asyncHandler(async (req, res) => {
         matchQuery['$expr'] = {
             $eq: [{ $month: "$createdAt" }, parseInt(mois, 10)]
         };
+    }
+
+    // Filtre par intervalle de dates (prioritaire / complementaire au
+    // filtre mois-annee). dateFin est inclusive jusqu'a la fin de journee.
+    if (dateDebut || dateFin) {
+        matchQuery.createdAt = matchQuery.createdAt || {};
+        if (dateDebut) matchQuery.createdAt.$gte = new Date(dateDebut);
+        if (dateFin) {
+            const fin = new Date(dateFin);
+            fin.setHours(23, 59, 59, 999);
+            matchQuery.createdAt.$lte = fin;
+        }
     }
 
     const stats = await EtiquettePartenaire.aggregate([
@@ -317,6 +329,10 @@ exports.getEtiquettesByPartenaire = asyncHandler(async (req, res) => {
                 _id: "$partenaireId",
                 totalSomme: { $sum: "$sommeAPayer" },
                 count: { $sum: 1 },
+                // Bornes de periode : premiere et derniere etiquette du
+                // partenaire dans l'intervalle filtre.
+                premiereDate: { $min: "$createdAt" },
+                derniereDate: { $max: "$createdAt" },
                 etiquettes: {
                     $push: {
                         _id: "$_id",
@@ -347,6 +363,8 @@ exports.getEtiquettesByPartenaire = asyncHandler(async (req, res) => {
                 partenaire: "$partenaireDetails.nom",
                 totalSomme: 1,
                 count: 1,
+                premiereDate: 1,
+                derniereDate: 1,
                 etiquettes: 1,
                 telephone: "$partenaireDetails.telephone",
                 typePartenaire: "$partenaireDetails.typePartenaire"

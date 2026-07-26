@@ -163,7 +163,7 @@ exports.getProfile = asyncHandler(async (req, res) => {
 
 exports.updateProfile = asyncHandler(async (req, res) => {
   const userId = req.params.id;
-  let { email, telephone, password, ...updateData } = req.body;
+  let { email, telephone, password, forcePhone, ...updateData } = req.body;
 
   // Récupérer l'utilisateur de la base de données
   const user = await User.findById(userId);
@@ -191,12 +191,25 @@ exports.updateProfile = asyncHandler(async (req, res) => {
   }
 
   if (telephone) {
+    // Plusieurs patients peuvent partager un numero : si le telephone est
+    // deja utilise par un autre compte et que l'utilisateur n'a pas encore
+    // confirme (forcePhone), on renvoie 409 pour afficher un popup. Avec
+    // forcePhone=true, on accepte le doublon.
     const telephoneExists = await User.findOne({ telephone, _id: { $ne: userId } });
-    if (telephoneExists) {
-      return res.status(400).json({ message: "Le téléphone est déjà utilisé par un autre compte." });
-    } else {
-      updateData.telephone = telephone;
+    if (telephoneExists && !forcePhone) {
+      const nomComplet = `${telephoneExists.prenom || ''} ${telephoneExists.nom || ''}`.trim();
+      return res.status(409).json({
+        success: false,
+        phoneExists: true,
+        existingPatient: {
+          nom: telephoneExists.nom,
+          prenom: telephoneExists.prenom,
+          nip: telephoneExists.nip,
+        },
+        message: `Le numéro ${telephone} est déjà enregistré pour ${nomComplet} (NIP ${telephoneExists.nip}). Voulez-vous quand même enregistrer ce patient avec ce numéro ?`,
+      });
     }
+    updateData.telephone = telephone;
   }
 
   // Générer un NIP uniquement si l'utilisateur n'en a pas déjà un
