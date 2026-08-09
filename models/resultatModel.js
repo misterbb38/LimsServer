@@ -120,6 +120,22 @@ const resultatSchema = new mongoose.Schema({
       mg: String,
     },
 
+    // --------------- Charge virale (VHB, VHC, VIH...) ---------------
+    // Resultat complementaire en logarithme : "1,00" (affiche
+    // "1,00 log UI/mL" sous la valeur principale en UI/mL).
+    chargeVirale: {
+      log: String,
+    },
+
+    // --------------- HPV (Papillomavirus humain) ---------------
+    // 3 resultats : HPV 16, HPV 18 et 45, Autres HPV.
+    // Valeurs : 'Positive' ou 'Négative'.
+    hpv: {
+      hpv16: String,
+      hpv18et45: String,
+      autresHpv: String,
+    },
+
     // --------------- Sérologie de Widal et Félix ---------------
     // 8 antigènes : AO/AH/BO/BH/CO/CH (Salmonella Paratyphi) et TO/TH
     // (Salmonella Typhi). Chaque antigène a un statut (Positive /
