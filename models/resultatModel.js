@@ -120,6 +120,21 @@ const resultatSchema = new mongoose.Schema({
       mg: String,
     },
 
+    // --------------- Sérologie de Widal et Félix ---------------
+    // 8 antigènes : AO/AH/BO/BH/CO/CH (Salmonella Paratyphi) et TO/TH
+    // (Salmonella Typhi). Chaque antigène a un statut (Positive /
+    // Négative) et, si positif, un titre (1/20 ... 1/2560).
+    widal: {
+      ao: { statut: String, titre: String },
+      ah: { statut: String, titre: String },
+      bo: { statut: String, titre: String },
+      bh: { statut: String, titre: String },
+      co: { statut: String, titre: String },
+      ch: { statut: String, titre: String },
+      to: { statut: String, titre: String },
+      th: { statut: String, titre: String },
+    },
+
     // --------------------- Section NFS ---------------------
     nfs: {
       hematiesEtConstantes: {
