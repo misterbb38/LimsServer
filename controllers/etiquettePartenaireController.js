@@ -1,6 +1,49 @@
 const asyncHandler = require('express-async-handler');
 const EtiquettePartenaire = require('../models/etiquettePartenaireModel');
+const FactureReference = require('../models/factureReferenceModel');
 const mongoose = require('mongoose');
+
+// GET /api/eti/facture-reference?partenaireId=...&mois=...&annee=...
+// Renvoie la reference de facture enregistree pour ce partenaire et
+// cette periode (null si aucune : le front demandera une saisie).
+exports.getFactureReference = asyncHandler(async (req, res) => {
+    const { partenaireId, mois = '', annee = '' } = req.query;
+    if (!partenaireId) {
+        return res
+            .status(400)
+            .json({ success: false, message: 'partenaireId requis' });
+    }
+    const ref = await FactureReference.findOne({
+        partenaireId,
+        mois: String(mois),
+        annee: String(annee),
+    });
+    res.json({ success: true, data: ref });
+});
+
+// POST /api/eti/facture-reference
+// Enregistre (upsert) la reference saisie : une seule par
+// partenaire + periode, reutilisee a chaque reimpression.
+exports.saveFactureReference = asyncHandler(async (req, res) => {
+    const { partenaireId, mois = '', annee = '', reference } = req.body;
+    if (!partenaireId || !reference) {
+        return res.status(400).json({
+            success: false,
+            message: 'partenaireId et reference requis',
+        });
+    }
+    const ref = await FactureReference.findOneAndUpdate(
+        { partenaireId, mois: String(mois), annee: String(annee) },
+        {
+            $setOnInsert: {
+                reference,
+                createdBy: req.user?._id,
+            },
+        },
+        { new: true, upsert: true }
+    );
+    res.json({ success: true, data: ref });
+});
 
 // Créer une nouvelle étiquette partenaire
 exports.createEtiquettePartenaire = asyncHandler(async (req, res) => {
