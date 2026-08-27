@@ -40,7 +40,7 @@ const userSchema = new mongoose.Schema({
   },
   userType: {
     type: String,
-    enum: ['patient', 'superadmin', 'medecin', 'technicien', 'preleveur', 'acceuil', 'partenaire'],
+    enum: ['patient', 'superadmin', 'medecin', 'docteur', 'biologiste', 'technicien', 'preleveur', 'acceuil', 'accueil', 'partenaire'],
     default: 'patient',
   },
   partenaireId: {
