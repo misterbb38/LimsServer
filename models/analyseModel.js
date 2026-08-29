@@ -147,7 +147,30 @@ const AnalyseSchema = new mongoose.Schema({
         montant: { type: Number, required: true, min: 0 },
         date: { type: Date, default: Date.now },
     }],
+    // Statut de prelevement du dossier, pose par le preleveur depuis la
+    // page Prelevement. Pour les statuts partiels (Non effectué /
+    // À reprélever / À contrôler), testsConcernes liste les parametres
+    // du dossier concernes (sous-ensemble de `tests`).
+    prelevement: {
+        statut: {
+            type: String,
+            enum: ['Dossier non prélevé', 'Effectué', 'Non effectué', 'À reprélever', 'À contrôler'],
+        },
+        testsConcernes: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Test',
+        }],
+        commentaire: { type: String, default: '' },
+        preleveurId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User',
+        },
+        datePrelevement: { type: Date },
+    },
 }, { timestamps: true });
+
+// Index pour la page Prelevement (liste par date + filtre statut).
+AnalyseSchema.index({ createdAt: -1, 'prelevement.statut': 1 });
 
 // Middleware pour recalculer montantRecus, avance, et reliquat avant de sauvegarder un document
 // Middleware pour recalculer montantRecus, avance, et reliquat avant de sauvegarder un document
