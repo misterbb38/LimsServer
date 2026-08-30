@@ -42,6 +42,12 @@ const AnalyseSchema = new mongoose.Schema({
         required: true,
         default: 'Interne'
     },
+    // Medecin/structure qui a prescrit l'analyse (texte libre, affiche
+    // dans l'en-tete du resultat).
+    prescripteur: {
+        type: String,
+        default: ''
+    },
     ordonnancePdf: {
         type: String,
         required: false
@@ -147,20 +153,41 @@ const AnalyseSchema = new mongoose.Schema({
         montant: { type: Number, required: true, min: 0 },
         date: { type: Date, default: Date.now },
     }],
-    // Statut de prelevement du dossier, pose par le preleveur depuis la
-    // page Prelevement. Pour les statuts partiels (Non effectué /
-    // À reprélever / À contrôler), testsConcernes liste les parametres
-    // du dossier concernes (sous-ensemble de `tests`).
+    // Prelevement du dossier, pose par le preleveur depuis la page
+    // Prelevement. CHAQUE parametre (test) du dossier a son propre
+    // statut dans `parametres`. Le champ `statut` du dossier est DERIVE
+    // automatiquement cote controller :
+    //  - aucun parametre preleve            -> 'Non prélevé'
+    //  - une partie prelevee                -> 'En attente'
+    //  - tout preleve                       -> 'Effectué'
+    //  - au moins un 'À reprélever'         -> 'À reprélever'
+    //  - sinon au moins un 'À contrôler'    -> 'À contrôler'
     prelevement: {
         statut: {
             type: String,
-            enum: ['Dossier non prélevé', 'Effectué', 'Non effectué', 'À reprélever', 'À contrôler'],
+            enum: ['Non prélevé', 'En attente', 'Effectué', 'À reprélever', 'À contrôler'],
         },
-        testsConcernes: [{
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'Test',
+        parametres: [{
+            testId: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'Test',
+            },
+            statut: {
+                type: String,
+                enum: ['Prélevé', 'Non prélevé', 'À reprélever', 'À contrôler'],
+                default: 'Non prélevé',
+            },
         }],
+        // Origine : preleve sur place ou echantillon APPORTE au labo
+        // (dans ce cas preleveurId est la personne qui l'a receptionne).
+        origine: {
+            type: String,
+            enum: ['Prélevé au laboratoire', 'Apporté au laboratoire'],
+            default: 'Prélevé au laboratoire',
+        },
         commentaire: { type: String, default: '' },
+        // Personne qui a fait le prelevement OU l'a receptionne :
+        // TOUJOURS l'utilisateur connecte (req.user), jamais le body.
         preleveurId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'User',

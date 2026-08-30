@@ -21,7 +21,7 @@ cloudinary.config({
 
 
 exports.createAnalyse = asyncHandler(async (req, res) => {
-    const { userId, userOwn, tests, typeAnalyse, partenaireId, cliniquePartenaireId, statusPayement, avance = 0, pourcentageCouverture = 0, reduction = 0, typeReduction, pc1 = 0, pc2 = 0, deplacement = 0, dateDeRecuperation, paiements, modeTest, identifiantManuel } = req.body;
+    const { userId, userOwn, tests, typeAnalyse, partenaireId, cliniquePartenaireId, statusPayement, avance = 0, pourcentageCouverture = 0, reduction = 0, typeReduction, pc1 = 0, pc2 = 0, deplacement = 0, dateDeRecuperation, paiements, modeTest, identifiantManuel, prescripteur = '' } = req.body;
 
     // Parsing du tableau paiements (peut arriver en string JSON via FormData).
     // Si paiements est fourni et non vide, on recalcule l'avance comme la
@@ -163,6 +163,7 @@ exports.createAnalyse = asyncHandler(async (req, res) => {
       userId,
       tests,
       typeAnalyse,
+      prescripteur,
       identifiant,
       partenaireId: partenaireId || undefined,
       cliniquePartenaireId: cliniquePartenaireId || undefined,
@@ -221,6 +222,9 @@ exports.getAnalyses = asyncHandler(async (req, res) => {
         .populate('tests', 'nom description categories machineA machineB valeurMachineA valeurMachineB interpretationA interpretationB prixAssurance prixPaf prixSococim  prixClinique prixIpm coeficiantB  montantRecus') // Inclure createdAt et updatedAt
         .populate('partenaireId', 'nom typePartenaire')
         .populate('cliniquePartenaireId', 'nom typePartenaire telephone')
+        // Noms des parametres dans le detail de prelevement (tooltip de
+        // la colonne Prelevement de la page Analyse).
+        .populate('prelevement.parametres.testId', 'nom')
         .populate({
             path: 'historiques',
             select: 'status description date createdAt updatedAt', // Inclure createdAt et updatedAt pour historiques
@@ -281,6 +285,9 @@ exports.getAnalysesPatient = asyncHandler(async (req, res) => {
         .populate('tests', 'nom description categories machineA machineB valeurMachineA valeurMachineB interpretationA interpretationB prixAssurance prixPaf prixIpm prixSococim  prixClinique coeficiantB  montantRecus') // Inclure createdAt et updatedAt
         .populate('partenaireId', 'nom typePartenaire')
         .populate('cliniquePartenaireId', 'nom typePartenaire telephone')
+        // Noms des parametres dans le detail de prelevement (tooltip de
+        // la colonne Prelevement de la page Analyse).
+        .populate('prelevement.parametres.testId', 'nom')
         .populate({
             path: 'historiques',
             select: 'status description date createdAt updatedAt', // Inclure createdAt et updatedAt pour historiques
@@ -399,6 +406,9 @@ exports.getAnalyse = asyncHandler(async (req, res) => {
         .populate('tests', 'nom description categories machineA machineB machineA machineB valeurMachineA valeurMachineB interpretationA interpretationB prixSococime prixAssurance prixPaf prixIpm prixClinique coeficiantB  montantRecus categorie')
         .populate('partenaireId', 'nom typePartenaire')
         .populate('cliniquePartenaireId', 'nom typePartenaire telephone')
+        // Noms des parametres dans le detail de prelevement (tooltip de
+        // la colonne Prelevement de la page Analyse).
+        .populate('prelevement.parametres.testId', 'nom')
         .populate({
             path: 'historiques',
             select: 'status description date createdAt updatedAt', // Inclure createdAt et updatedAt pour historiques
@@ -587,7 +597,7 @@ exports.getAnalyse = asyncHandler(async (req, res) => {
 
 
 exports.updateAnalyse = asyncHandler(async (req, res) => {
-    const { userOwn, tests, typeAnalyse, partenaireId, cliniquePartenaireId, statusPayement, avance = 0, pourcentageCouverture = 0, reduction = 0, typeReduction, pc1 = 0, pc2 = 0, deplacement = 0, dateDeRecuperation, paiements, modeTest, identifiantManuel } = req.body;
+    const { userOwn, tests, typeAnalyse, partenaireId, cliniquePartenaireId, statusPayement, avance = 0, pourcentageCouverture = 0, reduction = 0, typeReduction, pc1 = 0, pc2 = 0, deplacement = 0, dateDeRecuperation, paiements, modeTest, identifiantManuel, prescripteur } = req.body;
 
     // Parsing identique a create : si paiements fournis, ils sont la
     // source de verite pour le calcul de l'avance.
@@ -722,6 +732,12 @@ exports.updateAnalyse = asyncHandler(async (req, res) => {
     // updates de prix).
     if(typeAnalyse){
         analyse.typeAnalyse = typeAnalyse;
+    }
+
+    // Prescripteur : mis a jour uniquement s'il est fourni dans le body
+    // (chaine vide autorisee pour l'effacer).
+    if (prescripteur !== undefined) {
+        analyse.prescripteur = prescripteur;
     }
 
     // Ajout de la logique pour mettre à jour pc1, pc2, et deplacement
