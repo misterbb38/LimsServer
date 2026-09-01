@@ -802,11 +802,17 @@ exports.updateAnalyse = asyncHandler(async (req, res) => {
             await EtiquettePartenaire.findByIdAndDelete(etiquettePartenaire._id);
         }
     } else if (partenaireFacture && prixPartenaire > 0) {
-        // Création d'une nouvelle étiquette si elle n'existe pas
+        // Création d'une nouvelle étiquette si elle n'existe pas.
+        // IMPORTANT : createdAt = date de l'ANALYSE (pas la date du jour).
+        // La facture partenaire est groupee par mois sur le createdAt de
+        // l'etiquette : sans ca, un changement de partenaire en septembre
+        // sur un dossier d'aout ferait apparaitre le dossier dans la
+        // facture de septembre.
         await EtiquettePartenaire.create({
             analyseId: analyse._id,
             partenaireId: partenaireFacture,
             sommeAPayer: prixPartenaire,
+            createdAt: analyse.createdAt,
         });
     }
 
