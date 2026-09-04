@@ -28,6 +28,15 @@ const EtiquettePartenaireSchema = new mongoose.Schema({
     datePayement: {
         type: Date,
     },
+    // Declare explicitement pour NE PAS etre immutable (Mongoose rend
+    // createdAt immutable par defaut quand il le cree lui-meme via
+    // timestamps). On doit pouvoir le realigner sur la date de l'analyse
+    // quand le partenaire change : la facture partenaire est groupee par
+    // mois sur ce champ. Reste rempli automatiquement par timestamps si
+    // aucune valeur n'est fournie.
+    createdAt: {
+        type: Date,
+    },
 }, { timestamps: true });
 
 module.exports = mongoose.model('EtiquettePartenaire', EtiquettePartenaireSchema);

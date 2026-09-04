@@ -1,6 +1,7 @@
 const asyncHandler = require('express-async-handler');
 const EtiquettePartenaire = require('../models/etiquettePartenaireModel');
 const FactureReference = require('../models/factureReferenceModel');
+const Analyse = require('../models/analyseModel');
 const mongoose = require('mongoose');
 
 // GET /api/eti/facture-reference?partenaireId=...&mois=...&annee=...
@@ -48,10 +49,14 @@ exports.saveFactureReference = asyncHandler(async (req, res) => {
 // Créer une nouvelle étiquette partenaire
 exports.createEtiquettePartenaire = asyncHandler(async (req, res) => {
     const { partenaireId, analyseId, sommeAPayer } = req.body;
+    // createdAt = date de l'ANALYSE, pas la date du jour : la facture
+    // partenaire est groupee par mois sur ce champ.
+    const analyse = await Analyse.findById(analyseId).select('createdAt');
     const etiquettePartenaire = await EtiquettePartenaire.create({
         partenaireId,
         analyseId,
-        sommeAPayer
+        sommeAPayer,
+        ...(analyse?.createdAt ? { createdAt: analyse.createdAt } : {})
     });
     res.status(201).json({
         success: true,

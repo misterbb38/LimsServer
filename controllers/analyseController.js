@@ -796,6 +796,15 @@ exports.updateAnalyse = asyncHandler(async (req, res) => {
             // Mise à jour de l'étiquette existante même si le partenaire change
             etiquettePartenaire.partenaireId = partenaireFacture;
             etiquettePartenaire.sommeAPayer = prixPartenaire;
+            // IMPORTANT : on REALIGNE toujours createdAt sur la date de
+            // l'analyse. La facture partenaire est groupee par mois sur le
+            // createdAt de l'etiquette : sans ca, un dossier d'aout dont on
+            // change le partenaire en septembre bascule dans la facture de
+            // septembre. Realigner (et pas seulement preserver) repare aussi
+            // les etiquettes deja mal datees.
+            if (analyse.createdAt) {
+                etiquettePartenaire.createdAt = analyse.createdAt;
+            }
             await etiquettePartenaire.save();
         } else {
             // Suppression de l'étiquette si l'analyse n'a plus de partenaire
