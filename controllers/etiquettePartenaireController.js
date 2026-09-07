@@ -91,16 +91,37 @@ exports.getEtiquettePartenaireById = asyncHandler(async (req, res) => {
     });
 });
 
-// Mettre à jour une étiquette partenaire
+// Mettre à jour une étiquette partenaire.
+// On passe par un document + save() (et non findByIdAndUpdate) car
+// Mongoose RETIRE createdAt de tout update de requete : la date de
+// facturation serait ignoree en silence.
 exports.updateEtiquettePartenaire = asyncHandler(async (req, res) => {
-    const etiquette = await EtiquettePartenaire.findByIdAndUpdate(req.params.id, req.body, {
-        new: true,
-        runValidators: true
-    });
+    const etiquette = await EtiquettePartenaire.findById(req.params.id);
     if (!etiquette) {
         res.status(404);
         throw new Error('Etiquette partenaire non trouvée');
     }
+
+    const { statusPayement, datePayement, sommeAPayer, createdAt } = req.body;
+
+    if (statusPayement !== undefined) etiquette.statusPayement = statusPayement;
+    if (datePayement !== undefined) etiquette.datePayement = datePayement;
+    if (sommeAPayer !== undefined) etiquette.sommeAPayer = sommeAPayer;
+
+    // Date de facturation : c'est ELLE qui determine dans quel mois le
+    // dossier apparait dans Facture(Partenaire). Modifiable a la main
+    // pour rattacher un dossier au bon mois (saisie tardive, correction
+    // de partenaire faite le mois suivant...).
+    if (createdAt !== undefined) {
+        const date = new Date(createdAt);
+        if (isNaN(date.getTime())) {
+            res.status(400);
+            throw new Error('Date de facturation invalide');
+        }
+        etiquette.createdAt = date;
+    }
+
+    await etiquette.save();
     res.status(200).json({
         success: true,
         data: etiquette
